@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Dido OS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;overflow:hidden;touch-action:manipulation;font-family:Arial,sans-serif;width:100vw;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;user-select:none}
+#boot{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;z-index:100;transition:opacity 1s}
+#boot-text{font-size:15vw;font-weight:900;color:#0ff;opacity:0;animation:bootIn 2s forwards;text-shadow:0 0 40px #0ff,0 0 80px #0ff}
+@keyframes bootIn{0%{opacity:0;transform:scale(0.3)}50%{opacity:1;transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
+#face{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:relative}
+#eyes{display:flex;gap:12vw;align-items:center;justify-content:center;margin-top:-10vh}
+.eye{width:28vw;height:28vw;max-width:160px;max-height:160px;background:radial-gradient(circle,#111 40%,#0a0a0a 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;border:3px solid #0ff;box-shadow:0 0 20px rgba(0,255,255,0.3)}
+.iris{width:55%;height:55%;background:radial-gradient(circle at 35% 35%,#0ff,#0088aa);border-radius:50%;position:relative;transition:all 0.3s ease;box-shadow:0 0 15px #0ff}
+.pupil{width:40%;height:40%;background:#000;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);transition:all 0.3s}
+.iris-glow{position:absolute;width:25%;height:25%;background:rgba(255,255,255,0.8);border-radius:50%;top:22%;left:22%}
+.eyelid-top,.eyelid-bottom{position:absolute;width:110%;height:55%;background:#000;z-index:2;transition:transform 0.15s ease-in-out}
+.eyelid-top{top:-2%;left:-5%;border-radius:0 0 50% 50%;transform:translateY(-100%)}
+.eyelid-bottom{bottom:-2%;left:-5%;border-radius:50% 50% 0 0;transform:translateY(100%)}
+.blink .eyelid-top{transform:translateY(0)!important}
+.blink .eyelid-bottom{transform:translateY(0)!important}
+.happy .iris{background:radial-gradient(circle at 35% 35%,#0f0,#00aa44);box-shadow:0 0 20px #0f0;transform:scale(1.15)}
+.happy .eye{border-color:#0f0;box-shadow:0 0 25px rgba(0,255,0,0.4)}
+.sad .iris{transform:translateY(20%) scale(0.85)}
+.sad .eye{border-color:#66f;box-shadow:0 0 25px rgba(100,100,255,0.4)}
+.sad .eyelid-top{transform:translateY(-60%)!important}
+.angry .iris{background:radial-gradient(circle at 35% 35%,#f00,#aa0000);box-shadow:0 0 20px #f00;transform:scale(0.9)}
+.angry .eye{border-color:#f00;box-shadow:0 0 25px rgba(255,0,0,0.4)}
+.angry .eyelid-top{transform:translateY(-55%) rotate(10deg)!important}
+.eye:first-child.angry .eyelid-top{transform:translateY(-55%) rotate(-10deg)!important}
+.surprised .iris{transform:scale(1.4)}
+.surprised .pupil{transform:translate(-50%,-50%) scale(0.6)}
+.surprised .eye{border-color:#ff0;box-shadow:0 0 25px rgba(255,255,0,0.4)}
+.thinking .iris{transform:translateX(30%) translateY(-20%)}
+.thinking .eye{border-color:#a0f;box-shadow:0 0 25px rgba(160,0,255,0.3)}
+.sleepy .eyelid-top{transform:translateY(-40%)!important}
+.sleepy .iris{transform:translateY(15%) scale(0.9)}
+.sleepy .eye{border-color:#446;box-shadow:0 0 10px rgba(50,50,100,0.3)}
+.love .iris{background:radial-gradient(circle at 35% 35%,#f0a,#aa0055);box-shadow:0 0 20px #f0a}
+.love .eye{border-color:#f0a;box-shadow:0 0 25px rgba(255,0,170,0.4)}
+#mouth{margin-top:6vh;width:8vw;max-width:50px;height:2px;background:#0ff;border-radius:10px;transition:all 0.3s;box-shadow:0 0 10px rgba(0,255,255,0.5)}
+.happy #mouth{width:14vw;height:2vw;max-height:12px;border-radius:0 0 50% 50%;background:#0f0;box-shadow:0 0 10px rgba(0,255,0,0.5)}
+.sad #mouth{width:10vw;height:2vw;max-height:10px;border-radius:50% 50% 0 0;background:#66f;box-shadow:0 0 10px rgba(100,100,255,0.5)}
+.angry #mouth{width:12vw;height:1vw;background:#f00;box-shadow:0 0 10px rgba(255,0,0,0.5)}
+.surprised #mouth{width:6vw;height:6vw;max-width:35px;max-height:35px;border-radius:50%;background:transparent;border:2px solid #ff0;box-shadow:0 0 10px rgba(255,255,0,0.5)}
+.speaking #mouth{animation:speak 0.3s infinite alternate}
+@keyframes speak{0%{height:1vw;width:6vw}100%{height:4vw;width:10vw;border-radius:40%}}
+#status{position:fixed;bottom:5vh;color:#0ff;font-size:3.5vw;opacity:0.7;text-align:center;padding:0 5vw;max-width:90%;text-shadow:0 0 10px rgba(0,255,255,0.5)}
+#listening-indicator{position:fixed;bottom:12vh;width:15vw;height:15vw;max-width:70px;max-height:70px;border-radius:50%;border:2px solid #f00;display:none;animation:pulse 1s infinite;background:rgba(255,0,0,0.1)}
+@keyframes pulse{0%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:0.5}100%{transform:scale(1);opacity:1}}
+#text-input-wrap{position:fixed;bottom:2vh;width:90%;max-width:400px;display:none;z-index:50}
+#text-input{width:100%;padding:12px 16px;border:2px solid #0ff;border-radius:25px;background:rgba(0,20,20,0.9);color:#0ff;font-size:16px;outline:none}
+#text-input::placeholder{color:rgba(0,255,255,0.4)}
+#thinking-dots{display:none;position:fixed;bottom:18vh}
+#thinking-dots span{display:inline-block;width:2vw;height:2vw;max-width:10px;max-height:10px;margin:0 1vw;background:#a0f;border-radius:50%;animation:dotPulse 1.4s infinite}
+#thinking-dots span:nth-child(2){animation-delay:0.2s}
+#thinking-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes dotPulse{0%,80%,100%{transform:scale(0.6);opacity:0.3}40%{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+<div id="boot"><div id="boot-text">DIDO</div></div>
+<div id="face">
+  <div id="eyes">
+    <div class="eye" id="eye-l">
+      <div class="eyelid-top"></div>
+      <div class="iris"><div class="pupil"></div><div class="iris-glow"></div></div>
+      <div class="eyelid-bottom"></div>
+    </div>
+    <div class="eye" id="eye-r">
+      <div class="eyelid-top"></div>
+      <div class="iris"><div class="pupil"></div><div class="iris-glow"></div></div>
+      <div class="eyelid-bottom"></div>
+    </div>
+  </div>
+  <div id="mouth"></div>
+</div>
+<div id="thinking-dots"><span></span><span></span><span></span></div>
+<div id="listening-indicator"></div>
+<div id="status">Tócame para hablar</div>
+<div id="text-input-wrap">
+  <input id="text-input" type="text" placeholder="Escribe algo a Dido..." autocomplete="off">
+</div>
