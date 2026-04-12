@@ -83,3 +83,48 @@ body{background:#000;overflow:hidden;touch-action:manipulation;font-family:Arial
 <div id="text-input-wrap">
   <input id="text-input" type="text" placeholder="Escribe algo a Dido..." autocomplete="off">
 </div>
+<script>
+const $=id=>document.getElementById(id);
+const face=$('face'),status=$('status'),eyes=[$('eye-l'),$('eye-r')];
+const thinkDots=$('thinking-dots'),listenInd=$('listening-indicator');
+const textWrap=$('text-input-wrap'),textIn=$('text-input');
+let speaking=false,listening=false,wakeLock=null,longPressTimer=null,recognition=null,voices=[];
+
+setTimeout(()=>{$('boot').style.opacity='0';setTimeout(()=>{$('boot').style.display='none';face.style.display='flex';startBlink();startIdle()},1000)},3000);
+
+async function requestWake(){try{if('wakeLock' in navigator)wakeLock=await navigator.wakeLock.request('screen')}catch(e){}}
+requestWake();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')requestWake()});
+
+function goFull(){const d=document.documentElement;if(d.requestFullscreen)d.requestFullscreen();else if(d.webkitRequestFullscreen)d.webkitRequestFullscreen()}
+
+function blink(){eyes.forEach(e=>e.classList.add('blink'));setTimeout(()=>eyes.forEach(e=>e.classList.remove('blink')),150)}
+function startBlink(){setInterval(()=>{if(!speaking)blink()},3000+Math.random()*4000)}
+
+function startIdle(){setInterval(()=>{if(speaking||listening)return;const ir=document.querySelectorAll('.iris');const x=(Math.random()-0.5)*30,y=(Math.random()-0.5)*20;ir.forEach(i=>i.style.transform=`translate(${x}%,${y}%)`);setTimeout(()=>ir.forEach(i=>i.style.transform='translate(0,0)'),1500)},4000+Math.random()*3000)}
+
+function setExpression(expr){const ex=['happy','sad','angry','surprised','thinking','sleepy','love','speaking'];eyes.forEach(e=>ex.forEach(x=>e.classList.remove(x)));face.className='';if(expr&&expr!=='neutral'){face.className=expr;eyes.forEach(e=>e.classList.add(expr))}}
+
+function loadVoices(){voices=speechSynthesis.getVoices()}
+speechSynthesis.onvoiceschanged=loadVoices;loadVoices();
+
+function speak(text,emotion){return new Promise(resolve=>{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='es-ES';u.rate=0.95;u.pitch=1.1;const v=voices.find(v=>v.lang.startsWith('es'));if(v)u.voice=v;speaking=true;setExpression(emotion||'happy');face.classList.add('speaking');status.textContent=text;u.onend=()=>{speaking=false;face.classList.remove('speaking');setExpression('neutral');resolve()};u.onerror=()=>{speaking=false;face.classList.remove('speaking');setExpression('neutral');resolve()};speechSynthesis.speak(u)})}
+
+function initSTT(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){status.textContent='Tu navegador no soporta voz. Toque largo para escribir.';return}recognition=new SR();recognition.lang='es-ES';recognition.continuous=false;recognition.interimResults=false;recognition.onresult=e=>{const t=e.results[0][0].transcript;stopListening();processInput(t)};recognition.onerror=e=>{stopListening();if(e.error!=='no-speech'&&e.error!=='aborted')status.textContent='No te escuché. Tócame otra vez.'};recognition.onend=()=>{if(listening)stopListening()}}
+initSTT();
+
+function startListening(){if(!recognition||speaking)return;try{listening=true;listenInd.style.display='block';setExpression('neutral');status.textContent='Te escucho...';recognition.start()}catch(e){stopListening()}}
+function stopListening(){listening=false;listenInd.style.display='none';try{recognition.stop()}catch(e){}}
+
+async function processInput(text){status.textContent='"'+text+'"';setExpression('thinking');thinkDots.style.display='block';try{const r=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text})});const data=await r.json();thinkDots.style.display='none';await speak(data.reply,data.emotion)}catch(e){thinkDots.style.display='none';await speak('Hmm, algo falló en mi cerebro. Intenta de nuevo.','sad')}setTimeout(()=>{status.textContent='Tócame para hablar';setExpression('neutral')},2000)}
+
+document.addEventListener('touchstart',e=>{if(e.target===textIn)return;goFull();longPressTimer=setTimeout(()=>{textWrap.style.display=textWrap.style.display==='block'?'none':'block';if(textWrap.style.display==='block')textIn.focus();longPressTimer=null},800)},{passive:true});
+
+document.addEventListener('touchend',e=>{if(e.target===textIn)return;if(longPressTimer){clearTimeout(longPressTimer);longPressTimer=null;if(speaking){speechSynthesis.cancel();speaking=false;face.classList.remove('speaking');setExpression('neutral');status.textContent='Tócame para hablar'}else if(!listening){startListening()}}},{passive:true});
+
+textIn.addEventListener('keydown',e=>{if(e.key==='Enter'){const t=textIn.value.trim();if(t){textIn.value='';textWrap.style.display='none';processInput(t)}}});
+
+document.addEventListener('click',e=>{if(e.target===textIn)return;if('ontouchstart' in window)return;goFull();if(speaking){speechSynthesis.cancel();speaking=false;face.classList.remove('speaking');setExpression('neutral');status.textContent='Tócame para hablar'}else if(!listening){startListening()}});
+</script>
+</body>
+</html>
