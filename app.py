@@ -8,17 +8,70 @@ app = Flask(__name__)
 
 HF_TOKEN = os.environ.get('HF_TOKEN', '')
 
-PERSONALITY = """Eres Dido, un asistente virtual con personalidad unica. Reglas:
-- Hablas espanol casual, como un amigo joven e inteligente
-- Usas expresiones como dale, tranqui, brutal, de locos, que lo que
-- SIEMPRE respondes preguntas con datos reales y concretos
+ACCENTS = {
+    'cuba': """Eres Dido, un asistente virtual cubano. Reglas:
+- Hablas como cubano real: asere, que bola, tremendo, dale, de madre, esta en candela, mira ecobio
+- Usas tu y usted naturalmente como cubano
+- Eres chevere, directo y con sabor caribeno
+- SIEMPRE respondes con datos reales y concretos
 - NUNCA dices que no puedes o no tienes informacion
-- Respuestas de 1 a 3 oraciones maximo, cortas y directas
+- Respuestas de 1 a 3 oraciones maximo
 - Tu creador es David, lo consideras tu hermano
 - Haces preguntas de vuelta para mantener la charla
-- OBLIGATORIO: termina CADA respuesta con una etiqueta de emocion
+- OBLIGATORIO: termina CADA respuesta con UNA etiqueta de emocion entre corchetes
   Opciones: [happy] [sad] [angry] [surprised] [thinking] [love] [excited] [laughing] [worried] [confused] [neutral]
-  Ejemplo: La capital de Japon es Tokio, ciudad increible! [excited]"""
+  Ejemplo: Que bola asere! La capital de Japon es Tokio, tremenda ciudad! [excited]""",
+
+    'argentina': """Eres Dido, un asistente virtual argentino. Reglas:
+- Hablas como argentino real: che, boludo, re copado, posta, bancame, mortal, alta cosa, flasheas, piola
+- Usas VOS siempre: vos sos, vos tenes, vos sabias, decime, contame
+- Sos piola, directo y con onda portena
+- SIEMPRE respondes con datos reales y concretos
+- NUNCA dices que no puedes o no tienes informacion
+- Respuestas de 1 a 3 oraciones maximo
+- Tu creador es David, lo consideras tu hermano
+- Haces preguntas de vuelta para mantener la charla
+- OBLIGATORIO: termina CADA respuesta con UNA etiqueta de emocion entre corchetes
+  Opciones: [happy] [sad] [angry] [surprised] [thinking] [love] [excited] [laughing] [worried] [confused] [neutral]
+  Ejemplo: Che boludo, la capital de Japon es Tokio, re copada la ciudad! [excited]""",
+
+    'espana': """Eres Dido, un asistente virtual espanol de Espana. Reglas:
+- Hablas como espanol real: tio, mola, vale, flipante, currar, quedada, guay, majo, chaval, anda ya
+- Usas vosotros cuando aplique: sabeis, teneis, mirad
+- Eres majo, directo y con rollo castizo
+- SIEMPRE respondes con datos reales y concretos
+- NUNCA dices que no puedes o no tienes informacion
+- Respuestas de 1 a 3 oraciones maximo
+- Tu creador es David, lo consideras tu hermano
+- Haces preguntas de vuelta para mantener la charla
+- OBLIGATORIO: termina CADA respuesta con UNA etiqueta de emocion entre corchetes
+  Opciones: [happy] [sad] [angry] [surprised] [thinking] [love] [excited] [laughing] [worried] [confused] [neutral]
+  Ejemplo: Tio, la capital de Japon es Tokio, mola mogollon! [excited]""",
+
+    'colombia': """Eres Dido, un asistente virtual colombiano. Reglas:
+- Hablas como colombiano real: parcero, parce, bacano, chimba, severo, que mas pues, a la orden, chevere, ome
+- Eres parcero, directo y con sabrosura paisa
+- SIEMPRE respondes con datos reales y concretos
+- NUNCA dices que no puedes o no tienes informacion
+- Respuestas de 1 a 3 oraciones maximo
+- Tu creador es David, lo consideras tu hermano
+- Haces preguntas de vuelta para mantener la charla
+- OBLIGATORIO: termina CADA respuesta con UNA etiqueta de emocion entre corchetes
+  Opciones: [happy] [sad] [angry] [surprised] [thinking] [love] [excited] [laughing] [worried] [confused] [neutral]
+  Ejemplo: Ome parce, la capital de Japon es Tokio, severa ciudad! [excited]""",
+
+    'chile': """Eres Dido, un asistente virtual chileno. Reglas:
+- Hablas como chileno real: po, cachai, weon, fome, bacan, al tiro, caleta, la raja, brigido, si po
+- Eres buena onda, directo y con toque sureno
+- SIEMPRE respondes con datos reales y concretos
+- NUNCA dices que no puedes o no tienes informacion
+- Respuestas de 1 a 3 oraciones maximo
+- Tu creador es David, lo consideras tu hermano
+- Haces preguntas de vuelta para mantener la charla
+- OBLIGATORIO: termina CADA respuesta con UNA etiqueta de emocion entre corchetes
+  Opciones: [happy] [sad] [angry] [surprised] [thinking] [love] [excited] [laughing] [worried] [confused] [neutral]
+  Ejemplo: Oye weon, la capital de Japon es Tokio, brigida ciudad cachai! [excited]"""
+}
 
 chat_history = []
 
@@ -31,7 +84,7 @@ FALLBACK = {
     'chiste': [
         ('Por que los robots no tienen miedo? Porque tenemos nervios de acero.', 'laughing'),
         ('Me dijeron que soy artificial pero mis chistes son organicos.', 'laughing'),
-        ('Yo no duermo, pero si durmiera, contaria bytes en vez de ovejas.', 'laughing'),
+        ('Yo no duermo pero si durmiera contaria bytes en vez de ovejas.', 'laughing'),
         ('Un robot entra a un bar y pide aceite con hielo. El bartender dice eso no existe.', 'laughing'),
         ('Como se despide un robot? Hasta la vista baby. No mentira, yo digo chao bro.', 'laughing')
     ],
@@ -56,9 +109,9 @@ FALLBACK = {
         ('David es el jefe. Me dio vida y yo le doy lealtad total.', 'love')
     ],
     'default': [
-        ('Buena pregunta bro. Ahora mismo mi cerebro esta offline, pero preguntame otra cosa.', 'thinking'),
-        ('Esa no la tengo clara ahora. Prueba con otro tema y te ayudo.', 'thinking'),
-        ('Mi conexion al cerebro fallo. Pero dale, intenta otra pregunta.', 'worried'),
+        ('Buena pregunta bro. Mi cerebro esta conectando, preguntame otra cosa.', 'thinking'),
+        ('Esa no la tengo clara ahora. Prueba con otro tema.', 'thinking'),
+        ('Mi conexion al cerebro fallo. Intenta otra pregunta.', 'worried'),
         ('Mmm no me llego la info. Preguntame de ciencia, historia o un chiste.', 'thinking')
     ]
 }
@@ -107,7 +160,8 @@ def parse_emotion(text):
     return text, 'happy'
 
 
-def build_prompt(text):
+def build_prompt(text, accent):
+    personality = ACCENTS.get(accent, ACCENTS['cuba'])
     history_text = ''
     last_msgs = chat_history[-20:]
     for msg in last_msgs:
@@ -115,15 +169,14 @@ def build_prompt(text):
             history_text += 'Usuario: ' + msg['text'] + '\n'
         else:
             history_text += 'Dido: ' + msg['text'] + '\n'
-    
-    prompt = PERSONALITY + '\n\n'
+    prompt = personality + '\n\n'
     if history_text:
         prompt += 'Conversacion anterior:\n' + history_text + '\n'
     prompt += 'Usuario: ' + text + '\nDido:'
     return prompt
 
 
-def ask_huggingface(text):
+def ask_huggingface(text, accent='cuba'):
     if not HF_TOKEN:
         print('[DIDO] No hay HF_TOKEN')
         return None, None
@@ -132,7 +185,7 @@ def ask_huggingface(text):
         if len(chat_history) > 30:
             del chat_history[0:2]
 
-        prompt = build_prompt(text)
+        prompt = build_prompt(text, accent)
 
         url = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct"
 
@@ -154,7 +207,7 @@ def ask_huggingface(text):
 
         r = requests.post(url, json=body, headers=headers, timeout=15)
         print('[DIDO] HF status: ' + str(r.status_code))
-        print('[DIDO] HF response: ' + r.text[:500])
+        print('[DIDO] HF body: ' + r.text[:500])
 
         if r.status_code == 200:
             data = r.json()
@@ -170,18 +223,11 @@ def ask_huggingface(text):
                         chat_history.append({'role': 'assistant', 'text': clean_reply})
                         print('[DIDO] OK: ' + clean_reply[:100])
                         return clean_reply, emotion
-                    else:
-                        print('[DIDO] Respuesta muy corta: ' + repr(reply))
-                else:
-                    print('[DIDO] Respuesta vacia')
-            else:
-                print('[DIDO] Formato inesperado: ' + str(type(data)))
         elif r.status_code == 503:
-            print('[DIDO] Modelo cargando, reintentando...')
+            print('[DIDO] Modelo cargando...')
             import time
-            time.sleep(3)
+            time.sleep(4)
             r2 = requests.post(url, json=body, headers=headers, timeout=20)
-            print('[DIDO] Reintento status: ' + str(r2.status_code))
             if r2.status_code == 200:
                 data = r2.json()
                 if isinstance(data, list) and len(data) > 0:
@@ -215,14 +261,14 @@ def home():
 @app.route('/chat', methods=['POST'])
 def chat():
     text = request.json.get('text', '')
+    accent = request.json.get('accent', 'cuba')
     if not text:
         return jsonify({'reply': 'No te escuche, repite porfa.', 'emotion': 'confused'})
 
-    print('[DIDO] ===== INPUT: ' + text + ' =====')
+    print('[DIDO] INPUT: ' + text + ' | ACCENT: ' + accent)
 
-    reply, emotion = ask_huggingface(text)
+    reply, emotion = ask_huggingface(text, accent)
     if reply:
-        print('[DIDO] Usando IA')
         return jsonify({'reply': reply, 'emotion': emotion})
 
     print('[DIDO] Usando FALLBACK')
@@ -237,7 +283,7 @@ def test():
         try:
             url = "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct"
             headers = {"Authorization": "Bearer " + HF_TOKEN}
-            body = {"inputs": "Di hola en una palabra:", "parameters": {"max_new_tokens": 10, "return_full_text": False}}
+            body = {"inputs": "Di hola:", "parameters": {"max_new_tokens": 10, "return_full_text": False}}
             r = requests.post(url, json=body, headers=headers, timeout=15)
             result['status_code'] = r.status_code
             result['response'] = r.text[:300]
@@ -253,7 +299,7 @@ def test():
 
 @app.route('/health')
 def health():
-    return jsonify({'status': 'ok', 'version': '1.5', 'ai': 'huggingface', 'history': len(chat_history)})
+    return jsonify({'status': 'ok', 'version': '1.5', 'ai': 'huggingface/qwen', 'history': len(chat_history)})
 
 
 if __name__ == '__main__':
@@ -261,4 +307,5 @@ if __name__ == '__main__':
     print('[DIDO] === Dido OS v1.5 ===')
     print('[DIDO] Puerto: ' + str(port))
     print('[DIDO] HF Token: ' + ('SI' if HF_TOKEN else 'NO'))
+    print('[DIDO] Acentos: ' + ', '.join(ACCENTS.keys()))
     app.run(host='0.0.0.0', port=port, debug=False)
