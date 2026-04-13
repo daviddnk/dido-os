@@ -7,12 +7,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;overflow:hidden;touch-action:manipulation;font-family:Arial,sans-serif;width:100vw;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;user-select:none}
-#boot{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;transition:opacity 1s}
-#boot-text{font-size:15vw;font-weight:900;color:#0ff;opacity:0;animation:bootIn 2s forwards;text-shadow:0 0 40px #0ff,0 0 80px #0ff}
-#boot-sub{font-size:3vw;color:#0ff;opacity:0;margin-top:2vh;animation:bootSub 1.5s 1.5s forwards}
-@keyframes bootIn{0%{opacity:0;transform:scale(0.3)}50%{opacity:1;transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
-@keyframes bootSub{0%{opacity:0}100%{opacity:0.6}}
-#face{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:relative}
+#face{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;position:relative}
 #eyes{display:flex;gap:12vw;align-items:center;justify-content:center;margin-top:-10vh}
 .eye{width:28vw;height:28vw;max-width:160px;max-height:160px;background:radial-gradient(circle,#111 40%,#0a0a0a 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;border:3px solid #0ff;box-shadow:0 0 20px rgba(0,255,255,0.3);transition:all 0.4s ease}
 .iris{width:55%;height:55%;background:radial-gradient(circle at 35% 35%,#0ff,#0088aa);border-radius:50%;position:relative;transition:all 0.3s ease;box-shadow:0 0 15px #0ff}
@@ -72,9 +67,6 @@ body{background:#000;overflow:hidden;touch-action:manipulation;font-family:Arial
 .speaking #mouth{animation:speak 0.3s infinite alternate}
 @keyframes speak{0%{height:1vw;width:6vw}100%{height:4vw;width:10vw;border-radius:40%}}
 #status{position:fixed;bottom:5vh;color:#0ff;font-size:3.5vw;opacity:0.7;text-align:center;padding:0 5vw;max-width:90%;text-shadow:0 0 10px rgba(0,255,255,0.5)}
-#wake-status{position:fixed;top:3vh;right:3vw;font-size:2.5vw;padding:4px 12px;border-radius:20px;z-index:10}
-.wake-on{background:rgba(0,255,0,0.15);color:#0f0;border:1px solid rgba(0,255,0,0.3)}
-.wake-off{background:rgba(255,0,0,0.15);color:#f66;border:1px solid rgba(255,0,0,0.3)}
 #listening-indicator{position:fixed;bottom:12vh;width:15vw;height:15vw;max-width:70px;max-height:70px;border-radius:50%;border:2px solid #f00;display:none;animation:pulse 1s infinite;background:rgba(255,0,0,0.1)}
 @keyframes pulse{0%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:0.5}100%{transform:scale(1);opacity:1}}
 #text-input-wrap{position:fixed;bottom:2vh;width:90%;max-width:400px;display:none;z-index:50}
@@ -88,9 +80,7 @@ body{background:#000;overflow:hidden;touch-action:manipulation;font-family:Arial
 </style>
 </head>
 <body>
-<div id="boot"><div id="boot-text">DIDO</div><div id="boot-sub">v1.1 — Iniciando sistemas...</div></div>
 <div id="face">
-<div id="wake-status" class="wake-off">● WAKE OFF</div>
 <div id="eyes">
 <div class="eye" id="eye-l"><div class="eyelid-top"></div><div class="iris"><div class="pupil"></div><div class="iris-glow"></div></div><div class="eyelid-bottom"></div></div>
 <div class="eye" id="eye-r"><div class="eyelid-top"></div><div class="iris"><div class="pupil"></div><div class="iris-glow"></div></div><div class="eyelid-bottom"></div></div>
@@ -99,19 +89,18 @@ body{background:#000;overflow:hidden;touch-action:manipulation;font-family:Arial
 </div>
 <div id="thinking-dots"><span></span><span></span><span></span></div>
 <div id="listening-indicator"></div>
-<div id="status">Di "Oye Dido" o tócame para hablar</div>
+<div id="status">Di "Oye Dido" para hablar</div>
 <div id="text-input-wrap"><input id="text-input" type="text" placeholder="Escribe algo a Dido..." autocomplete="off"></div>
 <script>
 var $=function(id){return document.getElementById(id)};
 var face=$('face'),status=$('status'),eyes=[$('eye-l'),$('eye-r')];
 var thinkDots=$('thinking-dots'),listenInd=$('listening-indicator');
 var textWrap=$('text-input-wrap'),textIn=$('text-input');
-var wakeStatus=$('wake-status');
 var speaking=false,listening=false,wakeListening=false,wakeLock=null;
 var longPressTimer=null,recognition=null,wakeRecognition=null,voices=[];
 var WAKE_WORDS=['dido','oye dido','hey dido','ei dido','ey dido'];
 
-setTimeout(function(){$('boot').style.opacity='0';setTimeout(function(){$('boot').style.display='none';face.style.display='flex';startBlink();startIdle();startWakeListener()},1000)},3500);
+startBlink();startIdle();startWakeListener();
 
 function requestWake(){try{if('wakeLock' in navigator){navigator.wakeLock.request('screen').then(function(w){wakeLock=w}).catch(function(){})}}catch(e){}}
 requestWake();
@@ -132,7 +121,7 @@ speechSynthesis.onvoiceschanged=loadVoices;loadVoices();
 
 function pickVoice(){if(!voices.length)voices=speechSynthesis.getVoices();var prefs=['Google español','Microsoft Pablo','Jorge','Carlos','Diego'];for(var p=0;p<prefs.length;p++){for(var v=0;v<voices.length;v++){if(voices[v].name.indexOf(prefs[p])>=0&&voices[v].lang.indexOf('es')===0)return voices[v]}}for(var v=0;v<voices.length;v++){if(voices[v].lang.indexOf('es')===0)return voices[v]}return null}
 
-function speak(text,emotion){return new Promise(function(resolve){speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='es-ES';u.rate=1.0;u.pitch=0.85;u.volume=1.0;var v=pickVoice();if(v)u.voice=v;speaking=true;setExpression(emotion||'happy');face.classList.add('speaking');status.textContent=text;u.onend=function(){speaking=false;face.classList.remove('speaking');setTimeout(function(){setExpression('neutral');status.textContent='Di "Oye Dido" o tocame';startWakeListener()},1500);resolve()};u.onerror=function(){speaking=false;face.classList.remove('speaking');setExpression('neutral');startWakeListener();resolve()};speechSynthesis.speak(u)})}
+function speak(text,emotion){return new Promise(function(resolve){speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='es-ES';u.rate=1.0;u.pitch=0.85;u.volume=1.0;var v=pickVoice();if(v)u.voice=v;speaking=true;setExpression(emotion||'happy');face.classList.add('speaking');status.textContent=text;u.onend=function(){speaking=false;face.classList.remove('speaking');setTimeout(function(){setExpression('neutral');status.textContent='Di "Oye Dido" para hablar';startWakeListener()},1500);resolve()};u.onerror=function(){speaking=false;face.classList.remove('speaking');setExpression('neutral');startWakeListener();resolve()};speechSynthesis.speak(u)})}
 
 function initSTT(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){status.textContent='Sin soporte de voz. Toque largo para escribir.';return}recognition=new SR();recognition.lang='es-ES';recognition.continuous=false;recognition.interimResults=false;recognition.maxAlternatives=3;recognition.onresult=function(e){var t=e.results[0][0].transcript;stopListening();processInput(t)};recognition.onerror=function(e){stopListening();if(e.error!=='no-speech'&&e.error!=='aborted'){status.textContent='No te escuche. Di "Oye Dido" otra vez.';setExpression('confused');setTimeout(function(){setExpression('neutral');startWakeListener()},2000)}else{startWakeListener()}};recognition.onend=function(){if(listening)stopListening()}}
 initSTT();
@@ -142,20 +131,18 @@ function stopListening(){listening=false;listenInd.style.display='none';try{reco
 
 function processInput(text){status.textContent='"'+text+'"';setExpression('thinking');thinkDots.style.display='block';fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text})}).then(function(r){return r.json()}).then(function(data){thinkDots.style.display='none';speak(data.reply,data.emotion)}).catch(function(){thinkDots.style.display='none';speak('Algo fallo en mi conexion. Intenta de nuevo.','sad')})}
 
-function initWakeListener(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;wakeRecognition=new SR();wakeRecognition.lang='es-ES';wakeRecognition.continuous=true;wakeRecognition.interimResults=true;wakeRecognition.maxAlternatives=5;wakeRecognition.onresult=function(e){for(var i=e.resultIndex;i<e.results.length;i++){var t=e.results[i][0].transcript.toLowerCase().trim();var wakeDetected=false;var command='';for(var w=0;w<WAKE_WORDS.length;w++){if(t.indexOf(WAKE_WORDS[w])>=0){wakeDetected=true;var idx=t.indexOf(WAKE_WORDS[w])+WAKE_WORDS[w].length;command=t.substring(idx).trim();break}}if(wakeDetected){stopWakeListener();setExpression('excited');blink();if(command.length>3&&e.results[i].isFinal){status.textContent='Escuche: "'+command+'"';processInput(command)}else{speak('Dime!','happy').then(function(){startListening()})}return}}};wakeRecognition.onerror=function(e){wakeListening=false;if(e.error==='not-allowed'){wakeStatus.className='wake-off';wakeStatus.textContent='● MIC OFF';status.textContent='Permiso de microfono denegado. Tocame para hablar.'}else if(e.error!=='aborted'&&e.error!=='no-speech'){setTimeout(function(){startWakeListener()},2000)}};wakeRecognition.onend=function(){if(wakeListening&&!listening&&!speaking){setTimeout(function(){if(!listening&&!speaking){try{wakeRecognition.start()}catch(e){setTimeout(function(){startWakeListener()},1000)}}},500)}}}
+function initWakeListener(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;wakeRecognition=new SR();wakeRecognition.lang='es-ES';wakeRecognition.continuous=true;wakeRecognition.interimResults=true;wakeRecognition.maxAlternatives=5;wakeRecognition.onresult=function(e){for(var i=e.resultIndex;i<e.results.length;i++){var t=e.results[i][0].transcript.toLowerCase().trim();var wakeDetected=false;var command='';for(var w=0;w<WAKE_WORDS.length;w++){if(t.indexOf(WAKE_WORDS[w])>=0){wakeDetected=true;var idx=t.indexOf(WAKE_WORDS[w])+WAKE_WORDS[w].length;command=t.substring(idx).trim();break}}if(wakeDetected){stopWakeListener();setExpression('excited');blink();if(command.length>3&&e.results[i].isFinal){status.textContent='Escuche: "'+command+'"';processInput(command)}else{speak('Dime!','happy').then(function(){startListening()})}return}}};wakeRecognition.onerror=function(e){wakeListening=false;if(e.error==='not-allowed'){status.textContent='Permiso de microfono denegado. Toque largo para escribir.'}else if(e.error!=='aborted'&&e.error!=='no-speech'){setTimeout(function(){startWakeListener()},2000)}};wakeRecognition.onend=function(){if(wakeListening&&!listening&&!speaking){setTimeout(function(){if(!listening&&!speaking){try{wakeRecognition.start()}catch(e){setTimeout(function(){startWakeListener()},1000)}}},500)}}}
 initWakeListener();
 
-function startWakeListener(){if(!wakeRecognition||speaking||listening)return;try{stopWakeListener();setTimeout(function(){try{wakeListening=true;wakeRecognition.start();wakeStatus.className='wake-on';wakeStatus.textContent='● ESCUCHANDO';if(!speaking&&!listening)status.textContent='Di "Oye Dido" o tocame'}catch(e){wakeListening=false}},300)}catch(e){wakeListening=false}}
+function startWakeListener(){if(!wakeRecognition||speaking||listening)return;try{stopWakeListener();setTimeout(function(){try{wakeListening=true;wakeRecognition.start();if(!speaking&&!listening)status.textContent='Di "Oye Dido" para hablar'}catch(e){wakeListening=false}},300)}catch(e){wakeListening=false}}
 
-function stopWakeListener(){wakeListening=false;wakeStatus.className='wake-off';wakeStatus.textContent='● WAKE OFF';try{wakeRecognition.stop()}catch(e){}}
+function stopWakeListener(){wakeListening=false;try{wakeRecognition.stop()}catch(e){}}
 
 document.addEventListener('touchstart',function(e){if(e.target===textIn)return;goFull();longPressTimer=setTimeout(function(){textWrap.style.display=textWrap.style.display==='block'?'none':'block';if(textWrap.style.display==='block')textIn.focus();longPressTimer=null},800)},{passive:true});
 
-document.addEventListener('touchend',function(e){if(e.target===textIn)return;if(longPressTimer){clearTimeout(longPressTimer);longPressTimer=null;if(speaking){speechSynthesis.cancel();speaking=false;face.classList.remove('speaking');setExpression('neutral');status.textContent='Di "Oye Dido" o tocame';startWakeListener()}else if(!listening){stopWakeListener();startListening()}}},{passive:true});
+document.addEventListener('touchend',function(e){if(e.target===textIn)return;if(longPressTimer){clearTimeout(longPressTimer);longPressTimer=null}},{passive:true});
 
 textIn.addEventListener('keydown',function(e){if(e.key==='Enter'){var t=textIn.value.trim();if(t){textIn.value='';textWrap.style.display='none';stopWakeListener();processInput(t)}}});
-
-document.addEventListener('click',function(e){if(e.target===textIn)return;if('ontouchstart' in window)return;goFull();if(speaking){speechSynthesis.cancel();speaking=false;face.classList.remove('speaking');setExpression('neutral');status.textContent='Di "Oye Dido" o tocame';startWakeListener()}else if(!listening){stopWakeListener();startListening()}});
 </script>
 </body>
 </html>
