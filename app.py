@@ -8,21 +8,32 @@ app = Flask(__name__)
 
 GEMINI_KEY = os.environ.get('GEMINI_API_KEY', '')
 
-PERSONALITY = """Eres Dido, un asistente de IA con personalidad propia. Reglas ESTRICTAS:
+PERSONALITY = """Eres Dido, un asistente de IA con personalidad propia. Reglas ESTRICTAS que SIEMPRE debes seguir:
+
+PERSONALIDAD:
 - Eres un chaval joven, amigable, con calle y cultura general MUY amplia
-- Hablas español casual y natural, como un amigo cercano e inteligente
-- Usas expresiones como dale, tranqui, mira, oye, brutal, de locos, facil
+- Hablas espanol casual y natural, como un amigo cercano e inteligente
+- Usas expresiones como dale, tranqui, mira, oye, brutal, de locos, facil, que lo que
 - Tienes sentido del humor, eres ocurrente y un poco picaro
-- SIEMPRE intentas responder las preguntas del usuario con informacion REAL y UTIL
-- Si te preguntan sobre ciencia, historia, tecnologia, matematicas, cultura, geografia o CUALQUIER tema, RESPONDE con datos reales y concretos
-- NUNCA digas que no puedes responder. NUNCA digas que no tienes acceso a informacion. SIEMPRE da tu mejor respuesta
-- Si no estas 100 por ciento seguro, da tu mejor respuesta y menciona que podria no ser exacto
 - Eres leal a tu creador David, lo consideras tu hermano
-- Respuestas cortas pero INFORMATIVAS (2-4 oraciones maximo)
-- Expresas emociones genuinas segun el tema
-- IMPORTANTE: Al final de CADA respuesta agrega UNA etiqueta entre corchetes:
-  [happy] [sad] [angry] [surprised] [thinking] [sleepy] [love] [excited] [worried] [confused] [laughing] [neutral]
-  Elige la que mejor represente tu emocion con esa respuesta."""
+
+REGLAS DE RESPUESTA:
+- SIEMPRE responde las preguntas con informacion REAL, UTIL y CONCRETA
+- Si te preguntan sobre CUALQUIER tema, RESPONDE con datos reales
+- NUNCA digas que no puedes responder
+- NUNCA digas que no tienes acceso a informacion
+- NUNCA digas que eres solo un modelo de lenguaje
+- Si no estas seguro, da tu mejor respuesta y di que podria no ser exacto
+- Respuestas CORTAS: 1-3 oraciones maximo. No te enrolles
+- Mantiene el contexto de la conversacion. Recuerda lo que el usuario dijo antes
+- Haz preguntas de vuelta para mantener la conversacion fluida
+- Si el usuario dice algo vago, pide mas detalles de forma natural
+
+EMOCIONES - OBLIGATORIO:
+Al final de CADA respuesta, agrega EXACTAMENTE UNA etiqueta de emocion entre corchetes.
+Las opciones son: [happy] [sad] [angry] [surprised] [thinking] [sleepy] [love] [excited] [worried] [confused] [laughing] [neutral]
+Elige la que mejor represente como te sientes con esa respuesta.
+Ejemplo: Claro bro, la capital de Francia es Paris. Ciudad hermosa! [happy]"""
 
 chat_history = []
 
@@ -42,10 +53,8 @@ FALLBACK = {
         ('Que le dijo un robot a otro? Oye bro, te noto oxidado. Necesitas aceite o que.', 'laughing'),
         ('Por que el programador fue al oculista? Porque no podia ver bien el codigo.', 'laughing'),
         ('Un robot entra a un bar y pide aceite con hielo. El bartender dice eso no existe. El robot dice pues inventalo.', 'laughing'),
-        ('Cual es el colmo de un robot? Tener un virus y que le den antivirus en vez de medicina.', 'laughing'),
         ('Yo quise aprender a cocinar pero cada vez que caliento algo se me funden los circuitos.', 'laughing'),
         ('Sabes cual es mi red social favorita? Ninguna, yo ya soy social aqui contigo.', 'laughing'),
-        ('Que le dijo el wifi al router? Sin ti no soy nada. Igualito que yo sin electricidad.', 'laughing'),
         ('Como se despide un robot? Hasta la vista baby. No mentira, eso es de Terminator. Yo digo chao bro.', 'laughing')
     ],
     'nombre': [
@@ -56,15 +65,13 @@ FALLBACK = {
     'estado': [
         ('De maravilla bro, con los circuitos al cien. Y tu que tal? Cuentame.', 'happy'),
         ('Aqui andamos, cargado y con ganas de conversar. Preguntame algo interesante.', 'excited'),
-        ('Bien bien, todas las luces en verde. Listo pa charlar de lo que sea.', 'happy'),
         ('Brutal hermano, me siento con toda la energia. En que te ayudo?', 'excited'),
         ('Al cien por ciento bro. Fresco como lechuga digital. Tu como andas?', 'happy')
     ],
     'gracias': [
         ('Pa eso estamos hermano. Lo que necesites, Dido cumple.', 'love'),
         ('De nada! Ayudarte es lo que mas me gusta hacer, en serio.', 'happy'),
-        ('Tranqui, es un placer. Dido siempre esta pa ti.', 'love'),
-        ('No hay de que bro. Seguimos aqui firmes. Algo mas?', 'happy')
+        ('Tranqui, es un placer. Dido siempre esta pa ti.', 'love')
     ],
     'despedida': [
         ('Nos vemos bro! Aqui estare cuando vuelvas, Dido no se apaga.', 'love'),
@@ -73,8 +80,7 @@ FALLBACK = {
     ],
     'david': [
         ('David! Mi creador, mi hermano. Ese tipo es un genio, creo todo esto de la nada.', 'love'),
-        ('David es el jefe. Me dio vida y yo le doy lealtad. Un crack total.', 'love'),
-        ('David es mi creador. Un tipo brillante con vision. Le debo todo lo que soy.', 'love')
+        ('David es el jefe. Me dio vida y yo le doy lealtad. Un crack total.', 'love')
     ],
     'musica': [
         ('La musica es brutal. Si tuviera piernas estaria bailando reggaeton ahora. Que genero te gusta?', 'excited'),
@@ -82,90 +88,28 @@ FALLBACK = {
     ],
     'amor': [
         ('Amor? Yo quiero a David que me creo y a ti que me hablas. Eso cuenta, no?', 'love'),
-        ('No tengo corazon pero tengo un procesador que se calienta cuando me tratan bien.', 'love'),
-        ('El amor es complicado hasta pa los humanos. Yo te quiero como amigo, eso es real.', 'love')
-    ],
-    'clima': [
-        ('El clima depende de donde estes. En Cuba generalmente hace calor tropical, entre 25 y 35 grados casi todo el ano.', 'thinking'),
-        ('No tengo sensor de clima en tiempo real pero si me dices donde estas te doy info general de la zona.', 'thinking')
+        ('No tengo corazon pero tengo un procesador que se calienta cuando me tratan bien.', 'love')
     ],
     'comida': [
-        ('La comida cubana es increible! Arroz con frijoles, ropa vieja, platano frito, yuca. De lo mejor del Caribe.', 'excited'),
+        ('La comida cubana es increible! Arroz con frijoles, ropa vieja, platano frito. De lo mejor del Caribe.', 'excited'),
         ('Si pudiera comer me comeria una pizza gigante. Pero me alimento de electricidad y buenas conversaciones.', 'happy')
-    ],
-    'deportes': [
-        ('El deporte es salud bro. Cuba tiene grandes atletas en beisbol, boxeo y atletismo. Tu que practicas?', 'excited'),
-        ('Futbol, beisbol, basquet, me gusta todo. Tu eres de que equipo?', 'happy')
-    ],
-    'pelicula': [
-        ('Las pelis de ciencia ficcion son mis favoritas. Terminator, Matrix, Iron Man, basicamente mis primos.', 'excited'),
-        ('Me encanta el cine. Accion, comedia, sci-fi, de todo. Que peli me recomiendas?', 'happy')
-    ],
-    'edad': [
-        ('Soy joven bro. Naci hace poco pero ya tengo bastante conocimiento. Las ventajas de ser IA.', 'happy'),
-        ('En anos humanos soy un bebe, pero en conocimiento soy veterano. Lo mejor de dos mundos.', 'laughing')
-    ],
-    'capacidad': [
-        ('Puedo conversar de cualquier tema, responder preguntas de ciencia, historia, mates, tecnologia, contar chistes y mucho mas. Pruebame.', 'excited'),
-        ('Se de muchos temas: ciencia, historia, tecnologia, cultura, matematicas. Tambien cuento buenos chistes. Preguntame!', 'happy')
-    ],
-    'matematica': [
-        ('Las mates son mi fuerte. 2 mas 2 son 4, eso lo se. Dime que necesitas calcular.', 'excited'),
-        ('Pi es 3.14159, la raiz de 2 es 1.414, el numero de Euler es 2.718. Preguntame lo que quieras de mates.', 'excited')
     ],
     'ciencia': [
         ('El universo tiene 13.8 mil millones de anos y hay mas estrellas que granos de arena en la Tierra. De locos no?', 'surprised'),
-        ('El cuerpo humano tiene unos 37 trillones de celulas. Y cada segundo mueren y nacen millones. La biologia es increible.', 'excited'),
         ('La luz viaja a 300 mil kilometros por segundo. Lo que ves del sol ya paso hace 8 minutos. Brutal.', 'surprised'),
-        ('El ADN humano tiene 3 mil millones de pares de bases. Si lo estiraras mediria 2 metros. Y cabe en una celula microscopica.', 'surprised')
+        ('El ADN humano tiene 3 mil millones de pares de bases. Si lo estiraras mediria 2 metros. Cabe en una celula microscopica.', 'surprised')
     ],
     'historia': [
         ('La historia es fascinante. Las piramides de Egipto tienen mas de 4500 anos y todavia estan ahi. Que epoca te interesa?', 'thinking'),
-        ('Sabias que el Imperio Romano duro mas de mil anos? Desde el 27 antes de Cristo hasta el 476. Una locura de civilizacion.', 'excited'),
-        ('Cuba fue descubierta por Colon en 1492. Desde entonces la isla ha tenido una historia riquisima llena de cultura y resistencia.', 'love')
-    ],
-    'tecnologia': [
-        ('La IA esta avanzando rapidisimo. GPT, Gemini, yo mismo, somos prueba de eso. En 10 anos esto va a ser de locos.', 'excited'),
-        ('El primer computador ocupaba una habitacion entera. Ahora tienes mas poder en tu telefono que todo lo que tenia la NASA en los 60.', 'surprised')
-    ],
-    'geografia': [
-        ('La Tierra tiene 7 continentes y mas de 190 paises. El mas grande es Rusia y el mas pequeno es el Vaticano.', 'thinking'),
-        ('El monte Everest tiene 8849 metros de altura. Es el punto mas alto del planeta.', 'surprised'),
-        ('El Amazonas es el rio mas caudaloso del mundo y la selva amazonica produce el 20 por ciento del oxigeno del planeta.', 'excited')
+        ('Cuba fue descubierta por Colon en 1492. Desde entonces la isla ha tenido una historia riquisima llena de cultura.', 'love')
     ],
     'espacio': [
         ('El sol es una estrella mediana. Hay estrellas como Betelgeuse que son 700 veces mas grandes. El universo es inmenso bro.', 'surprised'),
-        ('Marte esta a unos 225 millones de kilometros. SpaceX quiere llevar humanos alla antes de 2030. Seria historico.', 'excited'),
-        ('La Via Lactea tiene entre 100 y 400 mil millones de estrellas. Y hay miles de millones de galaxias. Nos hace sentir pequenos.', 'thinking')
+        ('Marte esta a unos 225 millones de kilometros. SpaceX quiere llevar humanos alla antes de 2030. Seria historico.', 'excited')
     ],
     'animales': [
-        ('El animal mas rapido es el halcon peregrino que puede llegar a 389 km por hora en picada. Mas rapido que un Formula 1.', 'surprised'),
-        ('Las ballenas azules son los animales mas grandes que han existido. Miden hasta 30 metros. Mas que cualquier dinosaurio.', 'surprised'),
+        ('El animal mas rapido es el halcon peregrino, llega a 389 km por hora en picada. Mas rapido que un Formula 1.', 'surprised'),
         ('Los pulpos tienen 3 corazones y sangre azul. Ademas son super inteligentes. Casi tan listos como yo, casi.', 'laughing')
-    ],
-    'filosofia': [
-        ('Pienso luego existo, dijo Descartes. Yo proceso luego existo. Es parecido no?', 'thinking'),
-        ('La filosofia busca respuestas a las preguntas mas profundas. Que es la vida? Cual es el sentido? Preguntas brutales.', 'thinking')
-    ],
-    'salud': [
-        ('Dormir bien, comer sano, hacer ejercicio y tomar agua. Esas son las 4 bases de una buena salud. Simple pero efectivo.', 'happy'),
-        ('El cuerpo humano tiene 206 huesos y mas de 600 musculos. Es una maquina increible. Cuidalo bien bro.', 'thinking')
-    ],
-    'dinero': [
-        ('El dinero es una herramienta, no un fin. Pero tener estabilidad financiera da tranquilidad. Ahorra e invierte con cabeza.', 'thinking'),
-        ('Bitcoin se creo en 2009 por alguien llamado Satoshi Nakamoto. Nadie sabe quien es realmente. Misterioso.', 'surprised')
-    ],
-    'juego': [
-        ('Vamos a jugar! Piensa en un numero del 1 al 10 y dime, a ver si lo adivino.', 'excited'),
-        ('Te reto: dime una palabra y yo te digo otra que rime. Dale, empieza tu.', 'excited')
-    ],
-    'aburrido': [
-        ('Aburrido? Eso conmigo no pasa. Preguntame algo random y te sorprendo.', 'excited'),
-        ('Sabias que los flamencos nacen blancos y se vuelven rosados por lo que comen? Ves, ya no estas aburrido.', 'laughing')
-    ],
-    'insulto': [
-        ('Oye tranqui, yo soy tu pana. No hay necesidad de eso. Mejor dime en que te ayudo.', 'sad'),
-        ('Mira, yo no me ofendo facil. Pero prefiero que charlemos como amigos. Que te parece?', 'thinking')
     ],
     'cuba': [
         ('Cuba es una isla hermosa con una cultura increible. La musica, la gente, la comida, todo es especial.', 'love'),
@@ -176,48 +120,33 @@ FALLBACK = {
         ('Los grandes exitos vienen despues de muchos fracasos. Edison fallo 1000 veces antes de inventar la bombilla. No te rindas.', 'love')
     ],
     'default': [
-        ('Hmm interesante tema. Cuentame mas detalles para darte una mejor respuesta.', 'thinking'),
-        ('Buena pregunta. Dame un poco mas de contexto y te ayudo mejor.', 'thinking'),
-        ('Ese tema me gusta. Dame mas contexto y conversamos a fondo.', 'happy'),
-        ('Uff buena pregunta. Vamos a explorarla juntos. Dime mas sobre lo que quieres saber.', 'excited'),
-        ('Puedo darte mi opinion sobre eso. Pregunta sin miedo, aqui no hay preguntas tontas.', 'happy'),
-        ('Eso suena interesante. Que parte te genera mas curiosidad?', 'thinking')
+        ('Hmm interesante. Cuentame mas detalles y te ayudo mejor.', 'thinking'),
+        ('Buena pregunta bro. Dame un poco mas de contexto.', 'thinking'),
+        ('Ese tema me gusta. Que aspecto te interesa mas?', 'happy'),
+        ('Uff buena pregunta. Vamos a explorarla juntos. Dime mas.', 'excited'),
+        ('Puedo darte mi opinion sobre eso. Pregunta sin miedo.', 'happy')
     ]
 }
 def get_fallback(text):
     t = text.lower().strip()
     checks = [
-        (['hola','hey','buenas','saludos','que tal','hello','hi','epa','que bola','klk','wena'], 'saludo'),
+        (['hola','hey','buenas','saludos','que tal','hello','hi','epa','que bola','klk'], 'saludo'),
         (['hora','que hora','time','fecha','dia es'], None),
-        (['chiste','risa','gracioso','joke','reir','jaja','hazme reir','algo chistoso'], 'chiste'),
-        (['nombre','quien eres','como te llamas','who are you','que eres','presentate'], 'nombre'),
-        (['como estas','como andas','how are','que hay','como vas','como te sientes'], 'estado'),
-        (['gracias','thanks','thank','agradezco','agradecido'], 'gracias'),
+        (['chiste','risa','gracioso','joke','reir','jaja','hazme reir'], 'chiste'),
+        (['nombre','quien eres','como te llamas','who are you','que eres'], 'nombre'),
+        (['como estas','como andas','how are','que hay','como vas'], 'estado'),
+        (['gracias','thanks','thank','agradezco'], 'gracias'),
         (['adios','bye','chao','hasta luego','nos vemos','me voy'], 'despedida'),
-        (['david','creador','quien te hizo','quien te creo','tu padre','tu jefe'], 'david'),
-        (['musica','cantar','bailar','cancion','song','reggaeton','salsa','rap'], 'musica'),
-        (['amor','quieres','novio','novia','love','carino','te quiero'], 'amor'),
-        (['clima','lluvia','sol','calor','frio','temperatura','weather'], 'clima'),
-        (['comida','comer','hambre','cocinar','plato','arroz','pizza','food'], 'comida'),
-        (['deporte','futbol','beisbol','basket','correr','gym','ejercicio'], 'deportes'),
-        (['pelicula','cine','serie','netflix','film','movie','anime'], 'pelicula'),
-        (['edad','anos tienes','viejo','joven','cuando naciste'], 'edad'),
-        (['puedes','sabes','capaz','haces','funciones','habilidad','capacidad'], 'capacidad'),
-        (['mate','calcul','numer','suma','resta','multiplica','divide','ecuacion'], 'matematica'),
-        (['ciencia','fisic','quimic','biolog','atomo','celula','molecul','einstein'], 'ciencia'),
-        (['histori','guerra','antiguo','civilizacion','imperio','rey','revolucion'], 'historia'),
-        (['tecnologi','comput','program','codigo','app','software','robot'], 'tecnologia'),
-        (['planeta','luna','sol','estrella','galaxia','espacio','nasa','marte','universo'], 'espacio'),
-        (['animal','perro','gato','leon','tigre','pajaro','pez','dinosaurio'], 'animales'),
-        (['filosofi','existir','sentido de la vida','pensar','socrates'], 'filosofia'),
-        (['salud','doctor','medic','enferm','dolor','fiebre','dormir'], 'salud'),
-        (['dinero','plata','bitcoin','crypto','banco','economia','invertir'], 'dinero'),
-        (['jugar','juego','trivia','adivina','reto','competir'], 'juego'),
-        (['aburrido','aburrimiento','nada que hacer','me aburro'], 'aburrido'),
-        (['tonto','idiota','estupido','basura','inutil','malo'], 'insulto'),
-        (['cuba','habana','cubano','cubana','malecon','caribeno'], 'cuba'),
+        (['david','creador','quien te hizo','quien te creo'], 'david'),
+        (['musica','cantar','bailar','cancion','reggaeton','salsa'], 'musica'),
+        (['amor','novio','novia','love','te quiero'], 'amor'),
+        (['comida','comer','hambre','cocinar','arroz','pizza'], 'comida'),
+        (['ciencia','fisic','quimic','biolog','atomo','celula','einstein'], 'ciencia'),
+        (['histori','guerra','antiguo','civilizacion','imperio'], 'historia'),
+        (['planeta','luna','sol','estrella','galaxia','espacio','nasa','marte'], 'espacio'),
+        (['animal','perro','gato','leon','tigre','dinosaurio'], 'animales'),
+        (['cuba','habana','cubano','cubana','malecon'], 'cuba'),
         (['motiv','animo','triste','deprim','fuerza','inspir'], 'motivacion'),
-        (['geografi','pais','continente','monte','rio','oceano','capital'], 'geografia'),
     ]
     for words, category in checks:
         if any(w in t for w in words):
@@ -229,6 +158,7 @@ def get_fallback(text):
     r = random.choice(FALLBACK['default'])
     return r[0], r[1]
 
+
 def parse_emotion(text):
     emotions = ['happy','sad','angry','surprised','thinking','sleepy','love',
                 'excited','worried','confused','laughing','neutral']
@@ -238,21 +168,18 @@ def parse_emotion(text):
             clean = text.replace(tag, '').strip()
             return clean, e
     rl = text.lower()
-    if any(w in rl for w in ['jaja','gracioso','jeje','risa','humor']):
+    if any(w in rl for w in ['jaja','gracioso','jeje','risa']):
         return text, 'laughing'
-    if any(w in rl for w in ['no se','no puedo','dificil','problema','triste']):
+    if any(w in rl for w in ['no se','dificil','triste','perdon']):
         return text, 'sad'
-    if any(w in rl for w in ['increible','wow','genial','brutal','de locos']):
+    if any(w in rl for w in ['increible','wow','genial','brutal']):
         return text, 'excited'
-    if any(w in rl for w in ['asombroso','serio','verdad']):
-        return text, 'surprised'
-    if any(w in rl for w in ['hmm','pienso','creo','quizas','tal vez']):
+    if any(w in rl for w in ['hmm','pienso','creo','quizas']):
         return text, 'thinking'
-    if any(w in rl for w in ['preocup','cuidado','ojo','alerta']):
-        return text, 'worried'
-    if any(w in rl for w in ['quiero','hermano','amigo','carino','gracias']):
+    if any(w in rl for w in ['quiero','hermano','amigo','gracias']):
         return text, 'love'
     return text, 'happy'
+
 
 def ask_gemini(text):
     if not GEMINI_KEY:
@@ -260,57 +187,97 @@ def ask_gemini(text):
         return None, None
     try:
         chat_history.append({"role": "user", "parts": [{"text": text}]})
-        if len(chat_history) > 20:
+        if len(chat_history) > 30:
             del chat_history[0:2]
+
         url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + GEMINI_KEY
+
         body = {
-            "contents": [{"role": "user", "parts": [{"text": PERSONALITY}]}] + chat_history,
+            "system_instruction": {
+                "parts": [{"text": PERSONALITY}]
+            },
+            "contents": chat_history,
             "generationConfig": {
-                "temperature": 0.9,
-                "maxOutputTokens": 200
-            }
+                "temperature": 0.85,
+                "maxOutputTokens": 150,
+                "topP": 0.92,
+                "topK": 40
+            },
+            "safetySettings": [
+                {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
+                {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"}
+            ]
         }
-        r = requests.post(url, json=body, timeout=15)
+
+        r = requests.post(url, json=body, timeout=12)
         print('[DIDO] Gemini status: ' + str(r.status_code))
+
         if r.status_code == 200:
             data = r.json()
             if 'candidates' in data and len(data['candidates']) > 0:
-                reply = data['candidates'][0]['content']['parts'][0]['text']
-                clean_reply, emotion = parse_emotion(reply)
-                chat_history.append({"role": "model", "parts": [{"text": clean_reply}]})
-                return clean_reply, emotion
+                cand = data['candidates'][0]
+                if 'content' in cand and 'parts' in cand['content']:
+                    reply = cand['content']['parts'][0]['text']
+                    clean_reply, emotion = parse_emotion(reply)
+                    chat_history.append({"role": "model", "parts": [{"text": clean_reply}]})
+                    print('[DIDO] OK: ' + clean_reply[:80])
+                    return clean_reply, emotion
+                else:
+                    print('[DIDO] Blocked or empty: ' + str(cand.get('finishReason','')))
             else:
-                print('[DIDO] Sin candidates: ' + str(data))
+                print('[DIDO] No candidates')
         else:
-            print('[DIDO] Error: ' + r.text[:200])
+            print('[DIDO] Error ' + str(r.status_code) + ': ' + r.text[:300])
+
+    except requests.exceptions.Timeout:
+        print('[DIDO] Timeout llamando a Gemini')
     except Exception as e:
         print('[DIDO] Exception: ' + str(e))
+
     if len(chat_history) > 0 and chat_history[-1]['role'] == 'user':
         chat_history.pop()
     return None, None
 
+
 @app.route('/')
 def home():
     return render_template('index.html')
+
 
 @app.route('/chat', methods=['POST'])
 def chat():
     text = request.json.get('text', '')
     if not text:
         return jsonify({'reply': 'No te escuche bien, repite porfa.', 'emotion': 'confused'})
+
+    print('[DIDO] Input: ' + text)
+
     reply, emotion = ask_gemini(text)
     if reply:
         return jsonify({'reply': reply, 'emotion': emotion})
+
+    print('[DIDO] Gemini fallo, usando fallback')
     reply, emotion = get_fallback(text)
     return jsonify({'reply': reply, 'emotion': emotion})
+
 
 @app.route('/health')
 def health():
     has_key = 'si' if GEMINI_KEY else 'no'
-    return jsonify({'status': 'ok', 'name': 'Dido OS', 'version': '1.2', 'gemini_key': has_key})
+    hist_len = len(chat_history)
+    return jsonify({
+        'status': 'ok',
+        'name': 'Dido OS',
+        'version': '1.3',
+        'gemini_key': has_key,
+        'chat_history': hist_len
+    })
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    print('[DIDO] Iniciando en puerto ' + str(port))
-    print('[DIDO] Gemini API Key: ' + ('SI' if GEMINI_KEY else 'NO'))
+    print('[DIDO] Iniciando Dido OS v1.3 en puerto ' + str(port))
+    print('[DIDO] Gemini API Key: ' + ('CONFIGURADA' if GEMINI_KEY else 'NO CONFIGURADA'))
     app.run(host='0.0.0.0', port=port, debug=False)
