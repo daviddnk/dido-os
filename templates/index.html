@@ -10,324 +10,258 @@ body{background:#0a0a0f;overflow:hidden;touch-action:manipulation;font-family:'S
 
 .container{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
 
-/* === FONDO ANIMADO === */
-.bg-glow{position:fixed;top:50%;left:50%;width:600px;height:600px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(80,60,200,0.08) 0%,transparent 70%);animation:bgPulse 8s ease-in-out infinite;pointer-events:none;z-index:0}
-@keyframes bgPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.5}50%{transform:translate(-50%,-50%) scale(1.3);opacity:0.8}}
+/* === FONDO === */
+.bg-glow{position:fixed;top:50%;left:50%;width:500px;height:500px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(80,60,200,0.06) 0%,transparent 70%);animation:bgPulse 8s ease-in-out infinite;pointer-events:none;z-index:0}
+@keyframes bgPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.4}50%{transform:translate(-50%,-50%) scale(1.3);opacity:0.7}}
 
-/* === CARA === */
-#face{position:relative;width:280px;height:200px;display:flex;align-items:center;justify-content:center;gap:60px;z-index:1;transition:all 0.8s cubic-bezier(0.4,0,0.2,1)}
+/* === CARA COMPLETA === */
+#face{position:relative;width:280px;height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;transition:all 0.8s cubic-bezier(0.4,0,0.2,1)}
 
-/* === OJOS NUEVOS SUAVES === */
-.eye{width:72px;height:72px;background:radial-gradient(circle at 40% 35%,#f0f0ff,#d0d0e8);border-radius:50%;position:relative;box-shadow:0 0 30px rgba(140,120,255,0.15),inset 0 -3px 8px rgba(0,0,0,0.1);transition:all 0.6s cubic-bezier(0.4,0,0.2,1);overflow:hidden}
-.eye::before{content:'';position:absolute;top:8px;left:18px;width:18px;height:12px;background:rgba(255,255,255,0.7);border-radius:50%;filter:blur(2px);transition:all 0.6s ease;z-index:5}
+/* === CONTENEDOR OJOS === */
+#eyes{display:flex;align-items:center;justify-content:center;gap:55px;margin-bottom:35px}
+
+/* === OJOS === */
+.eye{width:68px;height:68px;background:radial-gradient(circle at 40% 35%,#f0f0ff,#d0d0e8);border-radius:50%;position:relative;box-shadow:0 0 25px rgba(140,120,255,0.12),inset 0 -3px 8px rgba(0,0,0,0.1);transition:all 0.6s cubic-bezier(0.4,0,0.2,1);overflow:hidden}
+.eye::before{content:'';position:absolute;top:8px;left:16px;width:16px;height:10px;background:rgba(255,255,255,0.7);border-radius:50%;filter:blur(2px);z-index:5;transition:all 0.5s ease}
 
 /* === IRIS === */
-.iris-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:36px;height:36px;transition:all 0.5s cubic-bezier(0.4,0,0.2,1)}
-.iris{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 38% 35%,#a78bfa,#7c3aed 40%,#4c1d95 80%);position:relative;transition:all 0.5s cubic-bezier(0.4,0,0.2,1);animation:irisBreath 4s ease-in-out infinite}
-@keyframes irisBreath{0%,100%{box-shadow:0 0 12px rgba(139,92,246,0.3)}50%{box-shadow:0 0 20px rgba(139,92,246,0.5)}}
+.iris-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;transition:all 0.4s cubic-bezier(0.4,0,0.2,1)}
+.iris{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 38% 35%,#a78bfa,#7c3aed 40%,#4c1d95 80%);position:relative;transition:all 0.5s cubic-bezier(0.4,0,0.2,1);animation:irisGlow 4s ease-in-out infinite}
+@keyframes irisGlow{0%,100%{box-shadow:0 0 10px rgba(139,92,246,0.25)}50%{box-shadow:0 0 18px rgba(139,92,246,0.45)}}
 
 /* === PUPILA === */
-.pupil{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;background:radial-gradient(circle at 35% 35%,#1a1a2e,#000);border-radius:50%;transition:all 0.4s cubic-bezier(0.4,0,0.2,1)}
-.pupil::after{content:'';position:absolute;top:3px;left:4px;width:5px;height:5px;background:rgba(255,255,255,0.9);border-radius:50%;transition:all 0.3s ease}
+.pupil{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:13px;height:13px;background:radial-gradient(circle at 35% 35%,#1a1a2e,#000);border-radius:50%;transition:all 0.4s cubic-bezier(0.4,0,0.2,1)}
+.pupil::after{content:'';position:absolute;top:3px;left:4px;width:4px;height:4px;background:rgba(255,255,255,0.9);border-radius:50%}
 
 /* === PARPADO === */
-.eyelid{position:absolute;top:-2px;left:-2px;right:-2px;height:0%;background:linear-gradient(180deg,#0a0a0f 60%,rgba(10,10,15,0.8));border-radius:50% 50% 0 0;transition:height 0.15s ease;z-index:10}
-
-/* === BLINK === */
+.eyelid{position:absolute;top:-2px;left:-2px;right:-2px;height:0%;background:linear-gradient(180deg,#0a0a0f 60%,rgba(10,10,15,0.8));border-radius:50% 50% 0 0;transition:height 0.12s ease;z-index:10}
 .eye.blink .eyelid{height:105%;transition:height 0.08s ease}
 
-/* === ESTADOS DE EXPRESION === */
+/* === BOCA === */
+#mouth{width:40px;height:20px;border:none;border-radius:0 0 50% 50%;background:transparent;border-bottom:3px solid rgba(139,92,246,0.5);position:relative;transition:all 0.6s cubic-bezier(0.4,0,0.2,1);overflow:hidden}
+
+/* === ESTADOS === */
 
 /* Happy */
-#face.happy .eye{border-radius:50% 50% 45% 45%;transform:scale(1.05)}
+#face.happy .eye{border-radius:50% 50% 45% 45%;transform:scale(1.03)}
 #face.happy .iris{background:radial-gradient(circle at 38% 35%,#c4b5fd,#8b5cf6 40%,#6d28d9 80%)}
-#face.happy .eyelid{height:20%}
+#face.happy .eyelid{height:15%}
+#face.happy #mouth{width:35px;height:18px;border-bottom:3px solid rgba(167,139,250,0.7);border-radius:0 0 50% 50%}
 
 /* Sad */
-#face.sad .eye{transform:scale(0.92) translateY(4px)}
+#face.sad .eye{transform:scale(0.92) translateY(3px)}
 #face.sad .iris{background:radial-gradient(circle at 38% 35%,#93c5fd,#3b82f6 40%,#1e40af 80%)}
-#face.sad .eyelid{height:35%}
-#face.sad .pupil{width:16px;height:16px}
+#face.sad .eyelid{height:30%}
+#face.sad .pupil{width:15px;height:15px}
+#face.sad #mouth{width:30px;height:12px;border-bottom:none;border-top:3px solid rgba(96,165,250,0.6);border-radius:50% 50% 0 0}
 
 /* Angry */
-#face.angry .eye{transform:scale(1.08)}
+#face.angry .eye{transform:scale(1.06)}
 #face.angry .iris{background:radial-gradient(circle at 38% 35%,#fca5a5,#ef4444 40%,#991b1b 80%)}
-#face.angry .eyelid{height:40%}
-#face.angry .pupil{width:10px;height:10px}
-#face.angry .eye:first-child{transform:scale(1.08) rotate(-8deg)}
-#face.angry .eye:last-child{transform:scale(1.08) rotate(8deg)}
+#face.angry .eyelid{height:38%}
+#face.angry .pupil{width:9px;height:9px}
+#face.angry .eye:first-child{transform:scale(1.06) rotate(-8deg)}
+#face.angry .eye:last-child{transform:scale(1.06) rotate(8deg)}
+#face.angry #mouth{width:25px;height:8px;border-bottom:3px solid rgba(239,68,68,0.7);border-radius:0}
 
 /* Surprised */
-#face.surprised .eye{width:82px;height:82px;transform:scale(1.1)}
+#face.surprised .eye{width:78px;height:78px;transform:scale(1.08)}
 #face.surprised .iris{background:radial-gradient(circle at 38% 35%,#fde68a,#f59e0b 40%,#b45309 80%)}
-#face.surprised .pupil{width:8px;height:8px}
+#face.surprised .pupil{width:7px;height:7px}
+#face.surprised #mouth{width:22px;height:22px;border:3px solid rgba(245,158,11,0.6);border-radius:50%;background:rgba(245,158,11,0.05)}
 
 /* Thinking */
-#face.thinking .eye:first-child .eyelid{height:30%}
-#face.thinking .eye:last-child{transform:translateY(-6px)}
-#face.thinking .iris{background:radial-gradient(circle at 38% 35%,#c4b5fd,#8b5cf6 40%,#5b21b6 80%)}
+#face.thinking .eye:first-child .eyelid{height:28%}
+#face.thinking .eye:last-child{transform:translateY(-5px)}
 #face.thinking .iris-wrap{transform:translate(-30%,-50%)}
-
-/* Sleepy */
-#face.sleepy .eyelid{height:60%}
-#face.sleepy .eye{transform:scale(0.9)}
-#face.sleepy .iris{background:radial-gradient(circle at 38% 35%,#cbd5e1,#64748b 40%,#334155 80%)}
+#face.thinking #mouth{width:20px;height:5px;border-bottom:3px solid rgba(139,92,246,0.4);border-radius:0;transform:translateX(10px)}
 
 /* Love */
 #face.love .iris{background:radial-gradient(circle at 38% 35%,#fda4af,#f43f5e 40%,#be123c 80%);animation:lovePulse 0.8s ease-in-out infinite}
-#face.love .eye{box-shadow:0 0 30px rgba(244,63,94,0.3)}
-@keyframes lovePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+#face.love .eye{box-shadow:0 0 25px rgba(244,63,94,0.25)}
+#face.love #mouth{width:38px;height:20px;border-bottom:3px solid rgba(244,63,94,0.6);border-radius:0 0 50% 50%}
+@keyframes lovePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 
 /* Excited */
-#face.excited .eye{transform:scale(1.1);animation:exciteBounce 0.5s ease infinite}
+#face.excited .eye{transform:scale(1.08);animation:exciteBounce 0.5s ease infinite}
 #face.excited .iris{background:radial-gradient(circle at 38% 35%,#fde68a,#f59e0b 40%,#d97706 80%)}
-@keyframes exciteBounce{0%,100%{transform:scale(1.1) translateY(0)}50%{transform:scale(1.1) translateY(-4px)}}
+#face.excited #mouth{width:40px;height:22px;border-bottom:3px solid rgba(245,158,11,0.7);border-radius:0 0 50% 50%}
+@keyframes exciteBounce{0%,100%{transform:scale(1.08) translateY(0)}50%{transform:scale(1.08) translateY(-3px)}}
 
 /* Worried */
-#face.worried .eye:first-child{transform:rotate(5deg) scale(0.95)}
-#face.worried .eye:last-child{transform:rotate(-5deg) scale(0.95)}
+#face.worried .eye:first-child{transform:rotate(4deg) scale(0.95)}
+#face.worried .eye:last-child{transform:rotate(-4deg) scale(0.95)}
 #face.worried .iris{background:radial-gradient(circle at 38% 35%,#fdba74,#f97316 40%,#c2410c 80%)}
-#face.worried .eyelid{height:25%}
+#face.worried .eyelid{height:22%}
+#face.worried #mouth{width:28px;height:5px;border-bottom:2px solid rgba(249,115,22,0.5);border-radius:0;transform:rotate(-5deg)}
 
 /* Confused */
-#face.confused .eye:first-child{transform:scale(1.05)}
-#face.confused .eye:last-child{transform:scale(0.9) translateY(4px)}
+#face.confused .eye:first-child{transform:scale(1.03)}
+#face.confused .eye:last-child{transform:scale(0.9) translateY(3px)}
 #face.confused .iris{background:radial-gradient(circle at 38% 35%,#d8b4fe,#a855f7 40%,#7e22ce 80%)}
+#face.confused #mouth{width:22px;height:10px;border:2px solid rgba(168,85,247,0.5);border-radius:50%;transform:rotate(15deg)}
 
 /* Laughing */
-#face.laughing .eyelid{height:55%}
-#face.laughing .eye{transform:scale(1.05);border-radius:50% 50% 40% 40%}
+#face.laughing .eyelid{height:50%}
+#face.laughing .eye{transform:scale(1.04);border-radius:50% 50% 40% 40%}
 #face.laughing .iris{background:radial-gradient(circle at 38% 35%,#fde68a,#eab308 40%,#a16207 80%)}
+#face.laughing #mouth{width:42px;height:24px;border-bottom:3px solid rgba(234,179,8,0.7);border-radius:0 0 50% 50%;background:rgba(234,179,8,0.05)}
 
 /* Speaking */
-#face.speaking .iris{animation:speakPulse 0.3s ease-in-out infinite alternate}
-@keyframes speakPulse{0%{transform:scale(1)}100%{transform:scale(1.08)}}
+#face.speaking #mouth{animation:mouthMove 0.35s ease-in-out infinite alternate}
+#face.speaking .iris{animation:speakGlow 0.4s ease-in-out infinite alternate}
+@keyframes mouthMove{0%{height:10px;width:28px;border-radius:0 0 40% 40%}100%{height:20px;width:36px;border-radius:0 0 50% 50%}}
+@keyframes speakGlow{0%{box-shadow:0 0 10px rgba(139,92,246,0.2)}100%{box-shadow:0 0 18px rgba(139,92,246,0.5)}}
 
-/* === STATUS TEXT === */
-#status{color:rgba(200,200,230,0.7);font-size:13px;text-align:center;max-width:85%;margin-top:30px;min-height:20px;line-height:1.5;z-index:1;transition:all 0.4s ease;letter-spacing:0.3px}
+/* Neutral */
+#face.neutral .eyelid{height:10%}
+#face.neutral #mouth{width:30px;height:2px;border-bottom:2px solid rgba(139,92,246,0.3);border-radius:0}
+
+/* Listening */
+#face.listening .iris{animation:listenPulse 1s ease-in-out infinite}
+#face.listening #mouth{width:15px;height:15px;border:2px solid rgba(139,92,246,0.5);border-radius:50%}
+@keyframes listenPulse{0%,100%{box-shadow:0 0 10px rgba(139,92,246,0.3)}50%{box-shadow:0 0 25px rgba(139,92,246,0.6)}}
+
+/* === STATUS === */
+#status{color:rgba(200,200,230,0.6);font-size:12px;text-align:center;max-width:80%;margin-top:25px;min-height:18px;line-height:1.4;z-index:1;transition:all 0.4s ease;letter-spacing:0.3px}
 
 /* === THINKING DOTS === */
-#thinking-dots{display:none;margin-top:15px;z-index:1}
-#thinking-dots span{display:inline-block;width:8px;height:8px;margin:0 4px;background:#8b5cf6;border-radius:50%;animation:dotBounce 1.2s ease-in-out infinite}
+#thinking-dots{display:none;margin-top:12px;z-index:1}
+#thinking-dots span{display:inline-block;width:7px;height:7px;margin:0 3px;background:#8b5cf6;border-radius:50%;animation:dotBounce 1.2s ease-in-out infinite}
 #thinking-dots span:nth-child(2){animation-delay:0.15s}
 #thinking-dots span:nth-child(3){animation-delay:0.3s}
-@keyframes dotBounce{0%,80%,100%{transform:translateY(0);opacity:0.4}40%{transform:translateY(-12px);opacity:1}}
+@keyframes dotBounce{0%,80%,100%{transform:translateY(0);opacity:0.3}40%{transform:translateY(-10px);opacity:1}}
 
-/* === LISTENING INDICATOR === */
-#listening-indicator{display:none;margin-top:12px;z-index:1}
-.listen-wave{display:inline-block;width:3px;height:15px;margin:0 2px;background:linear-gradient(to top,#8b5cf6,#c4b5fd);border-radius:3px;animation:wave 0.8s ease-in-out infinite}
-.listen-wave:nth-child(2){animation-delay:0.1s;height:22px}
-.listen-wave:nth-child(3){animation-delay:0.2s;height:28px}
-.listen-wave:nth-child(4){animation-delay:0.3s;height:22px}
-.listen-wave:nth-child(5){animation-delay:0.4s;height:15px}
-@keyframes wave{0%,100%{transform:scaleY(0.5);opacity:0.5}50%{transform:scaleY(1.2);opacity:1}}
-
-/* === SELECTOR DE ACENTO === */
-#accent-bar{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:20;background:rgba(20,20,35,0.85);padding:6px 10px;border-radius:25px;backdrop-filter:blur(10px);border:1px solid rgba(139,92,246,0.15)}
-.accent-btn{background:none;border:1px solid rgba(139,92,246,0.2);color:rgba(200,200,230,0.6);padding:5px 10px;border-radius:15px;font-size:11px;cursor:pointer;transition:all 0.3s ease;letter-spacing:0.3px}
-.accent-btn.active{background:rgba(139,92,246,0.25);color:#c4b5fd;border-color:rgba(139,92,246,0.5);box-shadow:0 0 10px rgba(139,92,246,0.15)}
-.accent-btn:hover{border-color:rgba(139,92,246,0.4)}
-
-/* === TEXT INPUT === */
-#text-input-wrap{display:none;position:fixed;bottom:70px;left:50%;transform:translateX(-50%);z-index:20;width:85%;max-width:350px}
-#text-input{width:100%;padding:10px 15px;border-radius:20px;border:1px solid rgba(139,92,246,0.3);background:rgba(20,20,35,0.9);color:#e0e0f0;font-size:14px;outline:none;backdrop-filter:blur(10px)}
-#text-input:focus{border-color:rgba(139,92,246,0.6);box-shadow:0 0 15px rgba(139,92,246,0.1)}
-#text-input::placeholder{color:rgba(160,160,190,0.4)}
+/* === WAKE WORD HINT === */
+#hint{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);color:rgba(160,160,190,0.3);font-size:11px;z-index:1;letter-spacing:0.5px;transition:opacity 0.5s ease}
 </style>
 </head>
 <body>
 <div class="bg-glow"></div>
-<div class="container" id="container">
+<div class="container">
   <div id="face">
-    <div class="eye" id="eye-l">
-      <div class="eyelid"></div>
-      <div class="iris-wrap"><div class="iris"><div class="pupil"></div></div></div>
+    <div id="eyes">
+      <div class="eye" id="eye-l">
+        <div class="eyelid"></div>
+        <div class="iris-wrap"><div class="iris"><div class="pupil"></div></div></div>
+      </div>
+      <div class="eye" id="eye-r">
+        <div class="eyelid"></div>
+        <div class="iris-wrap"><div class="iris"><div class="pupil"></div></div></div>
+      </div>
     </div>
-    <div class="eye" id="eye-r">
-      <div class="eyelid"></div>
-      <div class="iris-wrap"><div class="iris"><div class="pupil"></div></div></div>
-    </div>
+    <div id="mouth"></div>
   </div>
   <p id="status"></p>
   <div id="thinking-dots"><span></span><span></span><span></span></div>
-  <div id="listening-indicator">
-    <span class="listen-wave"></span><span class="listen-wave"></span><span class="listen-wave"></span><span class="listen-wave"></span><span class="listen-wave"></span>
-  </div>
-  <div id="text-input-wrap"><input type="text" id="text-input" placeholder="Escribe aqui..."></div>
-  <div id="accent-bar">
-    <button class="accent-btn active" data-accent="cuba">🇨🇺 Cuba</button>
-    <button class="accent-btn" data-accent="argentina">🇦🇷 Arg</button>
-    <button class="accent-btn" data-accent="espana">🇪🇸 Esp</button>
-    <button class="accent-btn" data-accent="colombia">🇨🇴 Col</button>
-    <button class="accent-btn" data-accent="chile">🇨🇱 Chi</button>
-  </div>
+  <p id="hint">di "Dido" para hablarme</p>
 </div>
 <script>
 const face = document.getElementById('face');
-const status = document.getElementById('status');
+const statusEl = document.getElementById('status');
 const thinkDots = document.getElementById('thinking-dots');
-const listenInd = document.getElementById('listening-indicator');
-const textInput = document.getElementById('text-input');
-const textWrap = document.getElementById('text-input-wrap');
+const hintEl = document.getElementById('hint');
 
-let currentAccent = 'cuba';
-let isListening = false;
 let isSpeaking = false;
 let isProcessing = false;
+let isAwake = false;
 let recognition = null;
 let micLocked = false;
-let speechQueue = [];
-
-/* === ACCENT SELECTOR === */
-document.querySelectorAll('.accent-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.accent-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentAccent = btn.dataset.accent;
-    const names = {cuba:'Cubano',argentina:'Argentino',espana:'Español',colombia:'Colombiano',chile:'Chileno'};
-    setStatus('Acento: ' + names[currentAccent]);
-    setTimeout(() => setStatus(''), 2000);
-  });
-});
-
-/* === VOICE CONFIG PER ACCENT === */
-function getVoiceConfig(accent) {
-  const configs = {
-    cuba:      {lang:'es-CU', fallback:'es-MX', rate:1.05, pitch:1.05},
-    argentina: {lang:'es-AR', fallback:'es-MX', rate:0.95, pitch:0.9},
-    espana:    {lang:'es-ES', fallback:'es-ES', rate:1.0,  pitch:1.0},
-    colombia:  {lang:'es-CO', fallback:'es-MX', rate:0.95, pitch:1.0},
-    chile:     {lang:'es-CL', fallback:'es-MX', rate:1.0,  pitch:0.95}
-  };
-  return configs[accent] || configs['cuba'];
-}
-
-/* === PICK BEST VOICE === */
-function pickVoice(config) {
-  const voices = speechSynthesis.getVoices();
-  if (!voices.length) return null;
-  let v = voices.find(x => x.lang === config.lang);
-  if (!v) v = voices.find(x => x.lang === config.fallback);
-  if (!v) v = voices.find(x => x.lang.startsWith('es'));
-  if (!v) v = voices[0];
-  return v;
-}
-
-/* === IMPROVE TEXT FOR TTS === */
-function prepareForSpeech(text) {
-  let t = text;
-  t = t.replace(/!/g, '. ');
-  t = t.replace(/\?/g, '? ');
-  t = t.replace(/\.\.\./g, ', ');
-  t = t.replace(/\n/g, '. ');
-  t = t.replace(/(\w)(a|e|i|o|u)(\s)/gi, '$1$2$3');
-  return t.trim();
-}
+let awakeTimer = null;
 
 /* === SET EMOTION === */
 function setEmotion(e) {
-  const valid = ['happy','sad','angry','surprised','thinking','sleepy','love','excited','worried','confused','laughing','neutral','speaking'];
+  const valid = ['happy','sad','angry','surprised','thinking','sleepy','love','excited','worried','confused','laughing','neutral','speaking','listening'];
   face.className = '';
   if (valid.includes(e)) face.classList.add(e);
 }
 
-/* === SET STATUS === */
-function setStatus(t) { status.textContent = t; }
-
-/* === SHOW THINKING === */
-function showThinking(show) {
-  thinkDots.style.display = show ? 'block' : 'none';
-  if (show) setEmotion('thinking');
+function setStatus(t) { statusEl.textContent = t; }
+function showThinking(s) {
+  thinkDots.style.display = s ? 'block' : 'none';
+  if (s) setEmotion('thinking');
 }
 
-/* === SHOW LISTENING === */
-function showListening(show) {
-  listenInd.style.display = show ? 'flex' : 'none';
-}
-
-/* === BLINK === */
+/* === BLINK NATURAL === */
 function blink() {
   document.querySelectorAll('.eye').forEach(e => {
     e.classList.add('blink');
-    setTimeout(() => e.classList.remove('blink'), 150);
+    setTimeout(() => e.classList.remove('blink'), 140);
   });
 }
-setInterval(() => {
-  blink();
-  if (Math.random() > 0.6) setTimeout(blink, 250);
-}, 3000 + Math.random() * 2000);
+function scheduleBlink() {
+  const delay = 2500 + Math.random() * 3000;
+  setTimeout(() => {
+    blink();
+    if (Math.random() > 0.65) setTimeout(blink, 220);
+    scheduleBlink();
+  }, delay);
+}
+scheduleBlink();
 
 /* === EYE TRACKING === */
-let mouseX = window.innerWidth / 2;
-let mouseY = window.innerHeight / 2;
+let eyeX = window.innerWidth / 2;
+let eyeY = window.innerHeight / 2;
 
 function updateEyes() {
   document.querySelectorAll('.iris-wrap').forEach(iw => {
     const rect = iw.parentElement.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
-    const dx = mouseX - cx;
-    const dy = mouseY - cy;
-    const maxMove = 8;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const factor = Math.min(dist / 200, 1);
-    const moveX = (dx / (dist || 1)) * maxMove * factor;
-    const moveY = (dy / (dist || 1)) * maxMove * factor;
-    iw.style.transform = 'translate(calc(-50% + ' + moveX + 'px), calc(-50% + ' + moveY + 'px))';
+    const dx = eyeX - cx;
+    const dy = eyeY - cy;
+    const maxM = 7;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const f = Math.min(dist / 200, 1);
+    const mx = (dx / dist) * maxM * f;
+    const my = (dy / dist) * maxM * f;
+    iw.style.transform = 'translate(calc(-50% + ' + mx + 'px), calc(-50% + ' + my + 'px))';
   });
   requestAnimationFrame(updateEyes);
 }
 updateEyes();
 
-document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+document.addEventListener('mousemove', e => { eyeX = e.clientX; eyeY = e.clientY; });
 document.addEventListener('touchmove', e => {
-  if (e.touches.length > 0) { mouseX = e.touches[0].clientX; mouseY = e.touches[0].clientY; }
+  if (e.touches.length) { eyeX = e.touches[0].clientX; eyeY = e.touches[0].clientY; }
 });
 
-/* Random eye movement */
 setInterval(() => {
-  if (!isSpeaking && !isListening) {
-    mouseX = window.innerWidth * (0.3 + Math.random() * 0.4);
-    mouseY = window.innerHeight * (0.3 + Math.random() * 0.4);
+  if (!isSpeaking && !isProcessing) {
+    eyeX = window.innerWidth * (0.3 + Math.random() * 0.4);
+    eyeY = window.innerHeight * (0.3 + Math.random() * 0.4);
   }
-}, 4000 + Math.random() * 3000);
+}, 3500 + Math.random() * 3000);
 
-/* === SPEAK WITH TTS === */
+/* === TTS SPEAK === */
 function speak(text, emotion, callback) {
-  if (isSpeaking) {
-    speechQueue.push({text, emotion, callback});
-    return;
-  }
   isSpeaking = true;
   micLocked = true;
-  stopListening();
+  stopMic();
 
   setEmotion('speaking');
-  const prepared = prepareForSpeech(text);
 
-  const utter = new SpeechSynthesisUtterance(prepared);
-  const config = getVoiceConfig(currentAccent);
-  const voice = pickVoice(config);
-  if (voice) utter.voice = voice;
-  utter.lang = config.lang;
-  utter.rate = config.rate;
-  utter.pitch = config.pitch;
-  utter.volume = 1;
+  let t = text.replace(/!/g, '. ').replace(/\?/g, '? ').replace(/\.\.\./g, ', ').replace(/\n/g, '. ');
+  const utter = new SpeechSynthesisUtterance(t);
+
+  const voices = speechSynthesis.getVoices();
+  let v = voices.find(x => x.lang === 'es-CU');
+  if (!v) v = voices.find(x => x.lang === 'es-MX');
+  if (!v) v = voices.find(x => x.lang === 'es-US');
+  if (!v) v = voices.find(x => x.lang.startsWith('es'));
+  if (v) utter.voice = v;
+
+  utter.lang = 'es-MX';
+  utter.rate = 1.0;
+  utter.pitch = 1.0;
 
   utter.onend = () => {
     isSpeaking = false;
     setEmotion(emotion || 'happy');
-
-    /* FIX MICROFONO: esperar 1.5s despues de hablar antes de abrir mic */
     setTimeout(() => {
       micLocked = false;
-      if (speechQueue.length > 0) {
-        const next = speechQueue.shift();
-        speak(next.text, next.emotion, next.callback);
-      } else {
-        if (callback) callback();
-        startListening();
-      }
+      if (callback) callback();
+      startPassiveListening();
     }, 1500);
   };
 
@@ -337,152 +271,194 @@ function speak(text, emotion, callback) {
     setTimeout(() => {
       micLocked = false;
       if (callback) callback();
-      startListening();
+      startPassiveListening();
     }, 1500);
   };
 
   speechSynthesis.cancel();
-  setTimeout(() => speechSynthesis.speak(utter), 100);
+  setTimeout(() => speechSynthesis.speak(utter), 80);
 }
 
 /* === SEND TO BACKEND === */
 async function sendMessage(text) {
   if (isProcessing || !text.trim()) return;
   isProcessing = true;
-  stopListening();
+  stopMic();
   showThinking(true);
   setStatus('');
+  hintEl.style.opacity = '0';
 
   try {
     const resp = await fetch('/chat', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({text: text, accent: currentAccent})
+      body: JSON.stringify({text: text})
     });
     const data = await resp.json();
     showThinking(false);
 
     if (data.reply) {
       setStatus(data.reply);
-      speak(data.reply, data.emotion || 'happy');
+      speak(data.reply, data.emotion || 'happy', () => {
+        resetAwake();
+      });
     } else {
-      setStatus('Hmm no recibi respuesta');
+      setStatus('No recibi respuesta');
       setEmotion('confused');
-      setTimeout(() => startListening(), 2000);
+      setTimeout(() => {
+        resetAwake();
+        startPassiveListening();
+      }, 2000);
     }
   } catch(e) {
-    console.error('[DIDO] Error:', e);
+    console.error('[DIDO]', e);
     showThinking(false);
     setStatus('Error de conexion');
     setEmotion('worried');
-    setTimeout(() => startListening(), 3000);
+    setTimeout(() => {
+      resetAwake();
+      startPassiveListening();
+    }, 3000);
   }
   isProcessing = false;
 }
 
-/* === SPEECH RECOGNITION === */
-function initRecognition() {
+/* === WAKE WORD DETECTION === */
+function containsWakeWord(text) {
+  const t = text.toLowerCase().trim();
+  const triggers = ['dido', 'dido,', 'oye dido', 'hey dido', 'ey dido', 'dido.', 'vido', 'tito', 'diodo'];
+  return triggers.some(w => t.includes(w));
+}
+
+function extractCommand(text) {
+  const t = text.toLowerCase().trim();
+  const removals = ['oye dido','hey dido','ey dido','dido,','dido.','dido'];
+  let clean = t;
+  for (const r of removals) {
+    clean = clean.replace(r, '').trim();
+  }
+  return clean;
+}
+
+/* === AWAKE STATE === */
+function goAwake() {
+  isAwake = true;
+  setEmotion('listening');
+  setStatus('Te escucho...');
+  hintEl.style.opacity = '0';
+
+  if (awakeTimer) clearTimeout(awakeTimer);
+  awakeTimer = setTimeout(() => {
+    if (isAwake && !isSpeaking && !isProcessing) {
+      resetAwake();
+      speak('Aqui estoy si me necesitas.', 'neutral');
+    }
+  }, 8000);
+}
+
+function resetAwake() {
+  isAwake = false;
+  if (awakeTimer) clearTimeout(awakeTimer);
+  awakeTimer = null;
+  hintEl.style.opacity = '1';
+}
+
+/* === MICROPHONE === */
+function initMic() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
-    textWrap.style.display = 'block';
-    setStatus('Tu navegador no soporta voz. Usa el teclado.');
+    setStatus('Tu navegador no soporta voz');
     return;
   }
 
   recognition = new SR();
   recognition.lang = 'es-ES';
-  recognition.continuous = false;
+  recognition.continuous = true;
   recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-
-  recognition.onstart = () => {
-    isListening = true;
-    showListening(true);
-    setStatus('Escuchando...');
-  };
+  recognition.maxAlternatives = 3;
 
   recognition.onresult = (e) => {
-    const text = e.results[0][0].transcript;
-    console.log('[DIDO] Escuche: ' + text);
-    isListening = false;
-    showListening(false);
-    setStatus('"' + text + '"');
-    sendMessage(text);
+    const last = e.results[e.results.length - 1];
+    if (!last.isFinal) return;
+
+    let text = '';
+    for (let i = 0; i < last.length; i++) {
+      const alt = last[i].transcript.toLowerCase();
+      if (containsWakeWord(alt)) {
+        text = last[i].transcript;
+        break;
+      }
+    }
+    if (!text) text = last[0].transcript;
+
+    console.log('[DIDO] Heard: ' + text);
+
+    if (isSpeaking || isProcessing || micLocked) return;
+
+    if (isAwake) {
+      const cmd = text.trim();
+      if (cmd.length > 1) {
+        if (awakeTimer) clearTimeout(awakeTimer);
+        setStatus('"' + cmd + '"');
+        sendMessage(cmd);
+      }
+      return;
+    }
+
+    if (containsWakeWord(text)) {
+      const cmd = extractCommand(text);
+      if (cmd.length > 2) {
+        goAwake();
+        setTimeout(() => {
+          setStatus('"' + cmd + '"');
+          sendMessage(cmd);
+        }, 300);
+      } else {
+        goAwake();
+        speak('Dime asere, te escucho.', 'happy');
+      }
+    }
   };
 
   recognition.onerror = (e) => {
     console.log('[DIDO] Mic error: ' + e.error);
-    isListening = false;
-    showListening(false);
-    if (e.error === 'no-speech') {
-      setStatus('No te escuche. Toca la pantalla para hablar.');
-      setEmotion('neutral');
-    } else if (e.error === 'not-allowed') {
-      setStatus('Permite el microfono para hablar.');
-      textWrap.style.display = 'block';
+    if (e.error === 'not-allowed') {
+      setStatus('Permite el microfono para hablar');
     }
   };
 
   recognition.onend = () => {
-    isListening = false;
-    showListening(false);
+    if (!isSpeaking && !micLocked) {
+      setTimeout(() => startPassiveListening(), 500);
+    }
   };
 }
 
-function startListening() {
-  if (micLocked || isSpeaking || isProcessing || isListening) return;
+function startPassiveListening() {
+  if (micLocked || isSpeaking || isProcessing) return;
   if (!recognition) return;
   try {
     recognition.start();
-  } catch(e) {
-    console.log('[DIDO] Mic start error:', e);
-  }
-}
-
-function stopListening() {
-  if (!recognition) return;
-  try {
-    recognition.stop();
   } catch(e) {}
-  isListening = false;
-  showListening(false);
 }
 
-/* === TEXT INPUT === */
-textInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && textInput.value.trim()) {
-    const text = textInput.value.trim();
-    textInput.value = '';
-    sendMessage(text);
-  }
-});
-
-/* === TAP TO TALK === */
-document.getElementById('container').addEventListener('click', (e) => {
-  if (e.target.closest('#accent-bar') || e.target.closest('#text-input-wrap')) return;
-  if (isSpeaking) {
-    speechSynthesis.cancel();
-    isSpeaking = false;
-    micLocked = false;
-    setEmotion('neutral');
-    setTimeout(() => startListening(), 500);
-    return;
-  }
-  if (!isListening && !isProcessing) {
-    startListening();
-  }
-});
+function stopMic() {
+  if (!recognition) return;
+  try { recognition.stop(); } catch(e) {}
+}
 
 /* === INIT === */
 function init() {
-  initRecognition();
+  initMic();
   speechSynthesis.getVoices();
   if (speechSynthesis.onvoiceschanged !== undefined) {
     speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
   }
   setEmotion('happy');
   setTimeout(() => {
-    speak('Que bola! Soy Dido, tu asistente personal. Toca la pantalla y hablame.', 'happy');
+    speak('Que bola! Soy Dido. Cuando quieras hablarme, solo di mi nombre.', 'happy', () => {
+      startPassiveListening();
+    });
   }, 1000);
 }
 window.addEventListener('load', init);
