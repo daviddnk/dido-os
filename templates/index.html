@@ -97,6 +97,7 @@ var face=$('face'),status=$('status'),eyes=[$('eye-l'),$('eye-r')];
 var thinkDots=$('thinking-dots'),listenInd=$('listening-indicator');
 var textWrap=$('text-input-wrap'),textIn=$('text-input');
 var speaking=false,listening=false,wakeListening=false,wakeLock=null;
+var inConversation=false,convoTimeout=null;
 var longPressTimer=null,recognition=null,wakeRecognition=null,voices=[];
 var WAKE_WORDS=['dido','oye dido','hey dido','ei dido','ey dido'];
 
@@ -104,7 +105,7 @@ startBlink();startIdle();startWakeListener();
 
 function requestWake(){try{if('wakeLock' in navigator){navigator.wakeLock.request('screen').then(function(w){wakeLock=w}).catch(function(){})}}catch(e){}}
 requestWake();
-document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){requestWake();if(!wakeListening)startWakeListener()}});
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){requestWake();if(!wakeListening&&!listening&&!speaking)startWakeListener()}});
 
 function goFull(){var d=document.documentElement;if(d.requestFullscreen)d.requestFullscreen();else if(d.webkitRequestFullscreen)d.webkitRequestFullscreen()}
 
@@ -121,17 +122,49 @@ speechSynthesis.onvoiceschanged=loadVoices;loadVoices();
 
 function pickVoice(){if(!voices.length)voices=speechSynthesis.getVoices();var prefs=['Google español','Microsoft Pablo','Jorge','Carlos','Diego'];for(var p=0;p<prefs.length;p++){for(var v=0;v<voices.length;v++){if(voices[v].name.indexOf(prefs[p])>=0&&voices[v].lang.indexOf('es')===0)return voices[v]}}for(var v=0;v<voices.length;v++){if(voices[v].lang.indexOf('es')===0)return voices[v]}return null}
 
-function speak(text,emotion){return new Promise(function(resolve){speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(text);u.lang='es-ES';u.rate=1.0;u.pitch=0.85;u.volume=1.0;var v=pickVoice();if(v)u.voice=v;speaking=true;setExpression(emotion||'happy');face.classList.add('speaking');status.textContent=text;u.onend=function(){speaking=false;face.classList.remove('speaking');setTimeout(function(){setExpression('neutral');status.textContent='Di "Oye Dido" para hablar';startWakeListener()},1500);resolve()};u.onerror=function(){speaking=false;face.classList.remove('speaking');setExpression('neutral');startWakeListener();resolve()};speechSynthesis.speak(u)})}
+function speak(text,emotion){return new Promise(function(resolve){
+speechSynthesis.cancel();
+var u=new SpeechSynthesisUtterance(text);
+u.lang='es-ES';u.rate=1.0;u.pitch=0.85;u.volume=1.0;
+var v=pickVoice();if(v)u.voice=v;
+speaking=true;setExpression(emotion||'happy');
+face.classList.add('speaking');status.textContent=text;
+u.onend=function(){
+speaking=false;face.classList.remove('speaking');
+inConversation=true;
+if(convoTimeout)clearTimeout(convoTimeout);
+convoTimeout=setTimeout(function(){inConversation=false;setExpression('neutral');status.textContent='Di "Oye Dido" para hablar';startWakeListener()},15000);
+setTimeout(function(){setExpression('neutral');status.textContent='Sigo escuchando...';startListening()},800);
+resolve()};
+u.onerror=function(){speaking=false;face.classList.remove('speaking');setExpression('neutral');startWakeListener();resolve()};
+speechSynthesis.speak(u)})}
 
-function initSTT(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){status.textContent='Sin soporte de voz. Toque largo para escribir.';return}recognition=new SR();recognition.lang='es-ES';recognition.continuous=false;recognition.interimResults=false;recognition.maxAlternatives=3;recognition.onresult=function(e){var t=e.results[0][0].transcript;stopListening();processInput(t)};recognition.onerror=function(e){stopListening();if(e.error!=='no-speech'&&e.error!=='aborted'){status.textContent='No te escuche. Di "Oye Dido" otra vez.';setExpression('confused');setTimeout(function(){setExpression('neutral');startWakeListener()},2000)}else{startWakeListener()}};recognition.onend=function(){if(listening)stopListening()}}
+function initSTT(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){status.textContent='Sin soporte de voz. Toque largo para escribir.';return}
+recognition=new SR();recognition.lang='es-ES';recognition.continuous=false;recognition.interimResults=false;recognition.maxAlternatives=3;
+recognition.onresult=function(e){var t=e.results[0][0].transcript;stopListening();if(convoTimeout)clearTimeout(convoTimeout);processInput(t)};
+recognition.onerror=function(e){stopListening();
+if(e.error==='no-speech'){
+if(inConversation){inConversation=false;setExpression('neutral');status.textContent='Di "Oye Dido" para hablar';startWakeListener()}
+else{startWakeListener()}
+}else if(e.error!=='aborted'){status.textContent='No te escuche. Di "Oye Dido" otra vez.';setExpression('confused');setTimeout(function(){setExpression('neutral');startWakeListener()},2000)}
+else{startWakeListener()}};
+recognition.onend=function(){if(listening){stopListening();if(inConversation){setTimeout(function(){if(!speaking&&!listening){startListening()}},500)}else{startWakeListener()}}}}
 initSTT();
 
-function startListening(){if(!recognition||speaking)return;stopWakeListener();try{listening=true;listenInd.style.display='block';setExpression('neutral');status.textContent='Te escucho...';recognition.start()}catch(e){stopListening();startWakeListener()}}
+function startListening(){if(!recognition||speaking)return;stopWakeListener();try{listening=true;listenInd.style.display='block';setExpression('neutral');if(!inConversation)status.textContent='Te escucho...';recognition.start()}catch(e){stopListening();startWakeListener()}}
 function stopListening(){listening=false;listenInd.style.display='none';try{recognition.stop()}catch(e){}}
 
-function processInput(text){status.textContent='"'+text+'"';setExpression('thinking');thinkDots.style.display='block';fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text})}).then(function(r){return r.json()}).then(function(data){thinkDots.style.display='none';speak(data.reply,data.emotion)}).catch(function(){thinkDots.style.display='none';speak('Algo fallo en mi conexion. Intenta de nuevo.','sad')})}
+function processInput(text){
+status.textContent='"'+text+'"';setExpression('thinking');thinkDots.style.display='block';
+var controller=new AbortController();
+var timer=setTimeout(function(){controller.abort()},12000);
+fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text}),signal:controller.signal}).then(function(r){return r.json()}).then(function(data){clearTimeout(timer);thinkDots.style.display='none';speak(data.reply,data.emotion)}).catch(function(){clearTimeout(timer);thinkDots.style.display='none';speak('Tuve un problema de conexion. Intenta de nuevo.','sad')})}
 
-function initWakeListener(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;wakeRecognition=new SR();wakeRecognition.lang='es-ES';wakeRecognition.continuous=true;wakeRecognition.interimResults=true;wakeRecognition.maxAlternatives=5;wakeRecognition.onresult=function(e){for(var i=e.resultIndex;i<e.results.length;i++){var t=e.results[i][0].transcript.toLowerCase().trim();var wakeDetected=false;var command='';for(var w=0;w<WAKE_WORDS.length;w++){if(t.indexOf(WAKE_WORDS[w])>=0){wakeDetected=true;var idx=t.indexOf(WAKE_WORDS[w])+WAKE_WORDS[w].length;command=t.substring(idx).trim();break}}if(wakeDetected){stopWakeListener();setExpression('excited');blink();if(command.length>3&&e.results[i].isFinal){status.textContent='Escuche: "'+command+'"';processInput(command)}else{speak('Dime!','happy').then(function(){startListening()})}return}}};wakeRecognition.onerror=function(e){wakeListening=false;if(e.error==='not-allowed'){status.textContent='Permiso de microfono denegado. Toque largo para escribir.'}else if(e.error!=='aborted'&&e.error!=='no-speech'){setTimeout(function(){startWakeListener()},2000)}};wakeRecognition.onend=function(){if(wakeListening&&!listening&&!speaking){setTimeout(function(){if(!listening&&!speaking){try{wakeRecognition.start()}catch(e){setTimeout(function(){startWakeListener()},1000)}}},500)}}}
+function initWakeListener(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;
+wakeRecognition=new SR();wakeRecognition.lang='es-ES';wakeRecognition.continuous=true;wakeRecognition.interimResults=true;wakeRecognition.maxAlternatives=5;
+wakeRecognition.onresult=function(e){for(var i=e.resultIndex;i<e.results.length;i++){var t=e.results[i][0].transcript.toLowerCase().trim();var wakeDetected=false;var command='';for(var w=0;w<WAKE_WORDS.length;w++){if(t.indexOf(WAKE_WORDS[w])>=0){wakeDetected=true;var idx=t.indexOf(WAKE_WORDS[w])+WAKE_WORDS[w].length;command=t.substring(idx).trim();break}}if(wakeDetected){stopWakeListener();setExpression('excited');blink();if(command.length>3&&e.results[i].isFinal){status.textContent='Escuche: "'+command+'"';processInput(command)}else{speak('Dime!','happy').then(function(){startListening()})}return}}};
+wakeRecognition.onerror=function(e){wakeListening=false;if(e.error==='not-allowed'){status.textContent='Permiso de microfono denegado. Toque largo para escribir.'}else if(e.error!=='aborted'&&e.error!=='no-speech'){setTimeout(function(){startWakeListener()},2000)}};
+wakeRecognition.onend=function(){if(wakeListening&&!listening&&!speaking){setTimeout(function(){if(!listening&&!speaking){try{wakeRecognition.start()}catch(e){setTimeout(function(){startWakeListener()},1000)}}},500)}}}
 initWakeListener();
 
 function startWakeListener(){if(!wakeRecognition||speaking||listening)return;try{stopWakeListener();setTimeout(function(){try{wakeListening=true;wakeRecognition.start();if(!speaking&&!listening)status.textContent='Di "Oye Dido" para hablar'}catch(e){wakeListening=false}},300)}catch(e){wakeListening=false}}
